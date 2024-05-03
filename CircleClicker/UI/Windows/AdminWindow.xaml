@@ -1,0 +1,223 @@
+﻿<Window
+    x:Class="CircleClicker.UI.Windows.AdminWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:CircleClicker.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:db="clr-namespace:CircleClicker.Models.Database"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:CircleClicker.Models"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:windows="clr-namespace:CircleClicker.UI.Windows"
+    Title="Admin Panel - Circle Clicker"
+    Width="1280"
+    Height="720"
+    d:DataContext="{d:DesignInstance windows:AdminWindow}"
+    Closing="Window_Closing"
+    Style="{StaticResource WindowStyle}"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid>
+        <Button
+            Name="btn_sampleData"
+            Margin="0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Panel.ZIndex="1"
+            Click="btn_sampleData_Click">
+            Load Default Data
+        </Button>
+        <TabControl SelectedIndex="{Binding CurrentTab, Mode=TwoWay}">
+            <TabItem Header="Buildings">
+                <DataGrid
+                    Name="dg_buildings"
+                    AutoGenerateColumns="False"
+                    Unloaded="DataGrid_Unloaded">
+                    <d:DataGrid.ItemsSource>
+                        <x:Array Type="db:Building">
+                            <db:Building />
+                        </x:Array>
+                    </d:DataGrid.ItemsSource>
+                    <DataGrid.RowHeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DataContext.Id, RelativeSource={RelativeSource AncestorType=DataGridRow}}" />
+                        </DataTemplate>
+                    </DataGrid.RowHeaderTemplate>
+                    <d:DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Name}"
+                            Header="Name" />
+                        <DataGridTemplateColumn Width="150" Header="Production">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="db:Building">
+                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding BaseProduction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Width="150" Header="Cost">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="db:Building">
+                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding BaseCost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="CostScaling">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="db:Building">
+                                    <controls:DoubleEntryControl
+                                        MaxValue="10"
+                                        MinValue="1"
+                                        Value="{Binding CostScaling, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </d:DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem Header="Upgrades">
+                <DataGrid
+                    Name="dg_upgrades"
+                    d:ItemsSource="{d:SampleData ItemCount=5}"
+                    AutoGenerateColumns="False"
+                    Unloaded="DataGrid_Unloaded">
+                    <DataGrid.RowHeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DataContext.Id, RelativeSource={RelativeSource AncestorType=DataGridRow}}" />
+                        </DataTemplate>
+                    </DataGrid.RowHeaderTemplate>
+                    <d:DataGrid.Columns>
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Name}"
+                            Header="Name" />
+                        <DataGridComboBoxColumn
+                            Width="200"
+                            Header="Requires"
+                            ItemsSource="{x:Static models:IReadOnlyDependency.Instances}"
+                            SelectedItemBinding="{Binding RequiredDependency}" />
+                        <DataGridTemplateColumn Width="150" Header="RequiredAmount">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="db:Upgrade">
+                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Requirement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridComboBoxColumn
+                            Width="200"
+                            Header="Affects"
+                            ItemsSource="{x:Static models:IStat.Instances}"
+                            SelectedItemBinding="{Binding AffectedStat}" />
+                        <DataGridTemplateColumn Width="75" Header="Effect">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="db:Upgrade">
+                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridComboBoxColumn
+                            Width="200"
+                            Header="Currency"
+                            ItemsSource="{x:Static models:IDependency.Instances}"
+                            SelectedItemBinding="{Binding CurrencyDependency}" />
+                        <DataGridTemplateColumn Width="150" Header="Cost">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="db:Upgrade">
+                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Cost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </d:DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Save">
+                <WrapPanel
+                    Name="wp_save"
+                    ItemWidth="250"
+                    Orientation="Vertical">
+                    <d:WrapPanel.Children>
+                        <StackPanel>
+                            <Label>Circles</Label>
+                            <controls:DoubleEntryControl />
+                        </StackPanel>
+                        <StackPanel>
+                            <Label>TotalCircles</Label>
+                            <controls:DoubleEntryControl />
+                        </StackPanel>
+                    </d:WrapPanel.Children>
+                </WrapPanel>
+            </TabItem>
+
+            <TabItem Header="Testing" IsSelected="True">
+                <WrapPanel Orientation="Vertical">
+                    <CheckBox Name="cbx_reintest" />
+                    <Slider
+                        Name="slider_reintest"
+                        Maximum="100"
+                        Value="50" />
+                    <Button
+                        Name="btn_reintest"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="0"
+                        Padding="0"
+                        IsEnabled="{Binding IsChecked, ElementName=cbx_reintest}">
+                        <Button.Resources>
+                            <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource SquareBrush}" />
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                                    <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="Background.GradientStops[0].Color" Duration="0:0:2.5">
+                                                        <EasingColorKeyFrame KeyTime="0%" Value="{StaticResource DarkSquareColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                        <EasingColorKeyFrame KeyTime="100%" Value="{StaticResource SquareColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                    </ColorAnimationUsingKeyFrames>
+                                                    <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="Background.GradientStops[1].Color" Duration="0:0:2.5">
+                                                        <EasingColorKeyFrame KeyTime="0%" Value="{StaticResource SquareColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                        <EasingColorKeyFrame KeyTime="100%" Value="{StaticResource BrightAccentColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                    </ColorAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Resources>
+
+                        <Grid>
+                            <ProgressBar
+                                Height="Auto"
+                                Margin="0"
+                                Foreground="{StaticResource SquareBrush}"
+                                Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Collapsed;Visible, FallbackValue=Visible, ElementName=cbx_reintest}"
+                                Value="{Binding Value, ElementName=slider_reintest}" />
+                            <TextBlock
+                                Padding="16,8"
+                                VerticalAlignment="Center"
+                                Text="Reincarnate!" />
+                        </Grid>
+                    </Button>
+                </WrapPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

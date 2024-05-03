@@ -1,0 +1,97 @@
+﻿<Window
+    x:Class="CircleClicker.UI.Windows.SavePickerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:db="clr-namespace:CircleClicker.Models.Database"
+    xmlns:globalization="clr-namespace:System.Globalization;assembly=System.Runtime"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:windows="clr-namespace:CircleClicker.UI.Windows"
+    Title="Pick a save - Circle Clicker"
+    Width="440"
+    d:DataContext="{d:DesignInstance Type=windows:SavePickerWindow}"
+    ResizeMode="NoResize"
+    SizeToContent="Height"
+    Style="{StaticResource WindowStyle}"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+
+    <StackPanel Margin="20">
+        <TextBlock Name="tb_welcome" Style="{StaticResource TitleStyle}">
+            Welcome back, admin!
+        </TextBlock>
+        <DataGrid
+            Name="dg_saves"
+            AutoGenerateColumns="False"
+            CanUserReorderColumns="False"
+            CanUserResizeColumns="False"
+            CanUserResizeRows="False"
+            CanUserSortColumns="False"
+            IsReadOnly="True"
+            MouseDoubleClick="btn_load_Click"
+            RowHeaderWidth="1"
+            SelectionChanged="dg_saves_SelectionChanged"
+            SelectionMode="Single"
+            Visibility="{Binding SaveExists, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <d:DataGrid.ItemsSource>
+                <x:Array Type="db:Save">
+                    <db:Save LastSaveDate="3/29/2024 15:30" LifetimeCircles="4e56" />
+                    <db:Save LastSaveDate="4/30/2024 17:30" LifetimeCircles="1e23" />
+                    <db:Save />
+                </x:Array>
+            </d:DataGrid.ItemsSource>
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding LifetimeCircles, Converter={StaticResource SuffixFormatter}, StringFormat=⚫ {0}}"
+                    Header="Circles earned" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding LastSaveDate, StringFormat={}{0:g}, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"
+                    Header="Last played"
+                    SortDirection="Descending" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <!--<ListView
+            Name="lv_saves"
+            Margin="0,8,0,0"
+            d:ItemsSource="{d:SampleData ItemCount=3}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn
+                        Width="100"
+                        DisplayMemberBinding="{Binding TotalCircles}"
+                        Header="Circles earned" />
+                    <GridViewColumn DisplayMemberBinding="{Binding LastSaveDate}" Header="Last modified" />
+                </GridView>
+            </ListView.View>
+        </ListView>-->
+        <TextBlock
+            Foreground="{StaticResource DimForegroundBrush}"
+            TextAlignment="Center"
+            Visibility="{Binding NoSavesExist, Converter={StaticResource BooleanToVisibilityConverter}}">
+            You don't seem to have any saves yet.<LineBreak />
+            Click
+            <!--  Force a space here  -->
+            <Bold>Start New Save</Bold>
+            to start your clicking adventure!</TextBlock>
+        <Button
+            Name="btn_new"
+            Click="btn_new_Click"
+            IsEnabled="{Binding CanCreateSave}">
+            Start New Save
+        </Button>
+        <Button
+            Name="btn_load"
+            Click="btn_load_Click"
+            IsEnabled="{Binding IsSaveSelected}">
+            Load Selected Save
+        </Button>
+        <Button
+            Name="btn_delete"
+            Click="btn_delete_Click"
+            IsEnabled="{Binding IsSaveSelected}">
+            Delete Selected Save
+        </Button>
+    </StackPanel>
+</Window>
