@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using CircleClicker.Models.Database;
+﻿using CircleClicker.Models.Database;
 using CircleClicker.Utils;
 
 namespace CircleClicker.Models
@@ -83,8 +76,11 @@ namespace CircleClicker.Models
     public class Stat : NotifyPropertyChanged, IStat
     {
         #region Instances
+        public static readonly List<Stat> Instances = [];
+
         /// <summary>
-        /// The amount of building production to add to the circles gained per click.
+        /// The amount of building production to add to the circles gained per click.<br />
+        /// On this stat, the returned <see cref="Value"/> is divided by 100.
         /// </summary>
         public static readonly Stat ProductionToCPC =
             new(
@@ -122,7 +118,7 @@ namespace CircleClicker.Models
 
         /// <summary>
         /// The chance to earn triangles from clicking the big button.<br />
-        /// On this stat, <see cref="Value"/> returns
+        /// On this stat, the returned <see cref="Value"/> is divided by 100.
         /// </summary>
         public static readonly Stat TriangleChance =
             new(
@@ -140,7 +136,8 @@ namespace CircleClicker.Models
             new(nameof(Squares), "Increases the squares you earn from reincarnating by x{0}.");
 
         /// <summary>
-        /// The multiplier to the <b>offline</b> production of all buildings.
+        /// The multiplier to the <b>offline</b> production of all buildings.<br />
+        /// On this stat, the returned <see cref="Value"/> is divided by 100.
         /// </summary>
         public static readonly Stat OfflineProduction =
             new(
@@ -169,7 +166,7 @@ namespace CircleClicker.Models
 
         public string Description { get; }
 
-        public double BaseValue { get; }
+        public VariableReference BaseValue { get; }
 
         public bool IsAdditive { get; }
 
@@ -192,6 +189,8 @@ namespace CircleClicker.Models
             }
         }
 
+        double IStat.BaseValue => BaseValue.Value;
+
         public Stat(
             string id = null!,
             string? statText = null,
@@ -202,10 +201,13 @@ namespace CircleClicker.Models
         {
             StatId = id;
             Description = statText ?? id;
-            BaseValue = baseValue ?? (isAdditive ? 0 : 1);
+            BaseValue = new($"Stat.{StatId}.BaseValue", baseValue ?? (isAdditive ? 0 : 1));
             IsAdditive = isAdditive;
             _customFormula = customFormula;
+
             IStat.Instances.Add(this);
+            Instances.Add(this);
+            _ = BaseValue;
         }
 
         public override string ToString()

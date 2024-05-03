@@ -1,28 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Media;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Collections.ObjectModel;
 using CircleClicker.Models;
 using CircleClicker.Models.Database;
 using CircleClicker.UI.Windows;
 using CircleClicker.Utils;
-using NAudio.Wave;
 
 namespace CircleClicker
 {
     public class Main : NotifyPropertyChanged
     {
         #region Constants
-        // TODO: consider finding a way to move some hardcoded variables to the database, so they can be edited by admins
         private Main() { }
 
         public static readonly Main Instance = new();
@@ -45,7 +31,10 @@ namespace CircleClicker
         /// <summary>
         /// The minimum number of circles needed to perform a reincarnation.
         /// </summary>
-        public const double ReincarnationCost = 1_000_000_000;
+        public static readonly VariableReference ReincarnationCost =
+            new("ReincarnationCost", 1_000_000_000);
+
+        public static readonly VariableReference SquarePower = new("SquarePower", 0.5);
         #endregion
 
         #region Properties / Fields
@@ -124,6 +113,11 @@ namespace CircleClicker
         /// </summary>
         public ObservableCollection<Upgrade> Upgrades { get; set; } = null!; // Set during App.Application_Startup
 
+        /// <summary>
+        /// A list of all game variables.
+        /// </summary>
+        public ObservableCollection<Variable> Variables { get; set; } = null!; // Set during App.Application_Startup
+
         // TODO: consider moving these to the Currency getters
         /// <summary>
         /// Returns the total production of all buildings.
@@ -136,8 +130,10 @@ namespace CircleClicker
         public double PendingSquares =>
             CurrentSave == null || CurrentSave.TotalCircles < ReincarnationCost
                 ? 0
-                : Math.Pow(CurrentSave.TotalCircles / ReincarnationCost, 0.5) * Stat.Squares.Value;
+                : Math.Pow(CurrentSave.TotalCircles / ReincarnationCost, SquarePower)
+                    * Stat.Squares.Value;
 
+        // TODO: ...and moving these to MainWindow
         /// <summary>
         /// Whether the player can currently reincarnate.
         /// </summary>
@@ -562,10 +558,21 @@ namespace CircleClicker
             );
             #endregion
 
+            #region Variables
+            foreach (VariableReference variable in VariableReference.Instances)
+            {
+                variable.Value = variable.DefaultValue;
+            }
+            #endregion
+
             if (IsDBAvailable)
             {
-                // HACK: This first saves the new purchases to generate IDs for them, then saves again to fix dependency references
+                // HACK: This needs to be done to save I(ReadOnly)Dependency references properly. Is there a better way to do this?
                 DB.SaveChanges();
+                foreach (Purchase purchase in DB.Purchases)
+                {
+                    DB.Update(purchase);
+                }
                 DB.SaveChanges();
             }
             IsAutosavingEnabled = prevState;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 
 namespace CircleClicker.Utils.Audio
 {
@@ -19,7 +14,7 @@ namespace CircleClicker.Utils.Audio
 
         public int Read(byte[] buffer, int offset, int count)
         {
-            long availableSamples = _cachedSound.AudioData.Length - _position;
+            long availableSamples = _cachedSound.AudioData.LongLength - _position;
             long samplesToCopy = Math.Min(availableSamples, count);
 
             Array.Copy(_cachedSound.AudioData, _position, buffer, offset, samplesToCopy);

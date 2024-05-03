@@ -1,16 +1,9 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Text;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using CircleClicker.Models;
 using CircleClicker.Models.Database;
@@ -52,6 +45,7 @@ namespace CircleClicker.UI.Windows
             if (Main.IsDBAvailable)
             {
                 // Load the necessary data from the database
+                Main.DB.Variables.Load();
                 Main.DB.Purchases.Load();
                 Main.DB.OwnedPurchases.Where(v => v.Save == Main.CurrentSave).Load();
             }
@@ -237,7 +231,6 @@ namespace CircleClicker.UI.Windows
         private void btn_clicker_Click(object sender, RoutedEventArgs e)
         {
             Point mousePos = Mouse.GetPosition(cnvs);
-
             double circlesGained = Stat.CirclesPerClick.Value;
             Save.Circles += circlesGained;
             Save.ManualCircles += circlesGained;

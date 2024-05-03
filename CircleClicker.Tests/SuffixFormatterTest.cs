@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using CircleClicker.Utils.Converters;
 using Xunit.Abstractions;

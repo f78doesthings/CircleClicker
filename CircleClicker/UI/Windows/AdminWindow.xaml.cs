@@ -1,24 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using CircleClicker.Models;
 using CircleClicker.Models.Database;
 using CircleClicker.UI.Controls;
-using Microsoft.EntityFrameworkCore;
 
 namespace CircleClicker.UI.Windows
 {
@@ -147,6 +135,8 @@ namespace CircleClicker.UI.Windows
             InitializeComponent();
             Main.IsAutosavingEnabled = false;
             DataContext = this;
+
+            dg_variables.ItemsSource = VariableReference.Instances;
 
             dg_buildings.ItemsSource = Main.Buildings;
             dg_buildings.Columns.Clear();

@@ -1,16 +1,11 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using CircleClicker.Models;
 using CircleClicker.Models.Database;
 using CircleClicker.UI.Windows;
 using CircleClicker.Utils.Audio;
-using CircleClicker.Utils.Converters;
-using Microsoft.EntityFrameworkCore;
 
 namespace CircleClicker
 {
@@ -43,9 +38,6 @@ namespace CircleClicker
             }
             return;
 #endif
-            CultureInfo.DefaultThreadCurrentUICulture = Culture;
-            Mouse.OverrideCursor = Cursors.Wait;
-
             MessageBoxEx progressBox =
                 new()
                 {
@@ -54,6 +46,9 @@ namespace CircleClicker
                     ShowLogo = true
                 };
             progressBox.Show();
+
+            Mouse.OverrideCursor = Cursors.Wait;
+            CultureInfo.DefaultThreadCurrentUICulture = Culture;
 
             Window? startWindow = null;
             bool shouldConnect = true;
@@ -94,8 +89,10 @@ namespace CircleClicker
 
                         if (result == MessageBoxResult.Yes)
                         {
+                            _ = Stat.Instances;
                             Main_.Buildings = Main_.DB.Buildings.Local.ToObservableCollection();
                             Main_.Upgrades = Main_.DB.Upgrades.Local.ToObservableCollection();
+                            Main_.Variables = Main_.DB.Variables.Local.ToObservableCollection();
                             Main_.LoadSampleData();
                         }
                     }
@@ -131,18 +128,21 @@ namespace CircleClicker
                 // Set up a temporary environment
                 Main_.Buildings = [];
                 Main_.Upgrades = [];
+                Main_.Variables = [];
                 Main_.CurrentUser = new User("<Guest>", "") { IsAdmin = true };
                 Main_.CurrentSave = new Save(Main_.CurrentUser);
                 startWindow = new MainWindow { Title = "Circle Clicker - Offline Mode" };
             }
             else
             {
-                Main_.Buildings = Main_.DB.Buildings.Local.ToObservableCollection();
-                Main_.Upgrades = Main_.DB.Upgrades.Local.ToObservableCollection();
+                Main_.Buildings ??= Main_.DB.Buildings.Local.ToObservableCollection();
+                Main_.Upgrades ??= Main_.DB.Upgrades.Local.ToObservableCollection();
+                Main_.Variables ??= Main_.DB.Variables.Local.ToObservableCollection();
             }
 
-            // Preload sounds
+            // Preload sounds and initialize static fields
             progressBox.Message = "Loading...";
+            _ = Stat.Instances;
             _ = ReadOnlyDependency.Clicks;
             _ = Currency.Instances;
             _ = AudioPlaybackEngine.Instance;

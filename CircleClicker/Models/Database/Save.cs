@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using CircleClicker.Utils;
+﻿using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 

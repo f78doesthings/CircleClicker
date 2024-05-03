@@ -75,6 +75,7 @@
                     </d:DataGrid.Columns>
                 </DataGrid>
             </TabItem>
+
             <TabItem Header="Upgrades">
                 <DataGrid
                     Name="dg_upgrades"
@@ -131,6 +132,34 @@
                 </DataGrid>
             </TabItem>
 
+            <TabItem d:IsSelected="True" Header="Variables">
+                <DataGrid
+                    Name="dg_variables"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False">
+                    <d:DataGrid.ItemsSource>
+                        <x:Array Type="db:Variable">
+                            <db:Variable Name="Stat.CirclesPerClick.BaseValue" Value="1" />
+                        </x:Array>
+                    </d:DataGrid.ItemsSource>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn
+                            Binding="{Binding Name}"
+                            Header="Name"
+                            IsReadOnly="True" />
+                        <DataGridTemplateColumn Header="Value">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="db:Variable">
+                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+
+                </DataGrid>
+            </TabItem>
+
             <TabItem Header="Save">
                 <WrapPanel
                     Name="wp_save"
@@ -149,7 +178,7 @@
                 </WrapPanel>
             </TabItem>
 
-            <TabItem Header="Testing" IsSelected="True">
+            <TabItem Header="Testing">
                 <WrapPanel Orientation="Vertical">
                     <CheckBox Name="cbx_reintest" />
                     <Slider
