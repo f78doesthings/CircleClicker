@@ -98,7 +98,7 @@ namespace CircleClicker.Models
             new(
                 nameof(CirclesPerClick),
                 "Gain x{0} base circles from clicking.",
-                customFormula: v => v + Main.Instance.TotalProduction * ProductionToCPC.Value
+                customFormula: v => v + Currency.Circles.Production * ProductionToCPC.Value
             );
 
         /// <summary>

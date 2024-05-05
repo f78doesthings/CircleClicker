@@ -1,0 +1,21 @@
+﻿<UserControl
+    x:Class="CircleClicker.UI.Controls.NumericEntryControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:CircleClicker.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CircleClicker"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="26"
+    d:DesignWidth="200"
+    mc:Ignorable="d">
+    <DockPanel>
+        <TextBox
+            Name="tb"
+            HorizontalContentAlignment="Right"
+            VerticalContentAlignment="Center"
+            GotFocus="tb_GotFocus"
+            LostFocus="tb_LostFocus"
+            Text="{Binding Value, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType=controls:NumericEntryControl}}" />
+    </DockPanel>
+</UserControl>

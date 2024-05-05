@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Circle Clicker"
     MinWidth="250"
-    MaxWidth="640"
+    MaxWidth="800"
     ResizeMode="NoResize"
     SizeToContent="WidthAndHeight"
     Style="{StaticResource WindowStyle}"
@@ -50,7 +50,7 @@
             Name="exp_exception"
             Grid.Row="2"
             Grid.Column="2"
-            Margin="0,6,0,0"
+            Margin="0,4,0,0"
             d:IsExpanded="True"
             Header="Show Exception">
             <Expander.ContextMenu>
@@ -63,7 +63,7 @@
                 </ContextMenu>
             </Expander.ContextMenu>
 
-            <StackPanel Margin="0,4,0,0">
+            <StackPanel Margin="0,6,0,0">
                 <TextBlock HorizontalAlignment="Left">
                     <Run Name="run_exceptionType" FontWeight="Bold">System.Exception:</Run>
                     <Run Name="run_exceptionMessage">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</Run>
@@ -77,7 +77,7 @@
                         FontSize="12"
                         Foreground="{StaticResource DimForegroundBrush}"
                         TextWrapping="NoWrap">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.<LineBreak />
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, you know the drill...<LineBreak />
                         <LineBreak />
                         <LineBreak />
                         <LineBreak />
@@ -106,10 +106,11 @@
             HorizontalAlignment="Right">
             <WrapPanel.Resources>
                 <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-                    <Setter Property="Margin" Value="12,0,0,0" />
+                    <Setter Property="Margin" Value="10,0,0,0" />
                 </Style>
             </WrapPanel.Resources>
             <Button>Example Button</Button>
+            <Button>Example Button 2</Button>
         </WrapPanel>
     </Grid>
 </Window>

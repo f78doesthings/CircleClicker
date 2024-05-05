@@ -51,24 +51,21 @@
                         <DataGridTemplateColumn Width="150" Header="Production">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="db:Building">
-                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding BaseProduction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding BaseProduction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Width="150" Header="Cost">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="db:Building">
-                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding BaseCost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding BaseCost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="CostScaling">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="db:Building">
-                                    <controls:DoubleEntryControl
-                                        MaxValue="10"
-                                        MinValue="1"
-                                        Value="{Binding CostScaling, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:DoubleEntryControl Minimum="1" Value="{Binding CostScaling, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -100,7 +97,7 @@
                         <DataGridTemplateColumn Width="150" Header="RequiredAmount">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="db:Upgrade">
-                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Requirement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding Requirement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -112,7 +109,7 @@
                         <DataGridTemplateColumn Width="75" Header="Effect">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="db:Upgrade">
-                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -124,7 +121,7 @@
                         <DataGridTemplateColumn Width="150" Header="Cost">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="db:Upgrade">
-                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Cost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding Cost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -132,7 +129,7 @@
                 </DataGrid>
             </TabItem>
 
-            <TabItem d:IsSelected="True" Header="Variables">
+            <TabItem Header="Variables">
                 <DataGrid
                     Name="dg_variables"
                     AutoGenerateColumns="False"
@@ -151,7 +148,7 @@
                         <DataGridTemplateColumn Header="Value">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="db:Variable">
-                                    <controls:DoubleEntryControl MaxValue="{x:Static sys:Double.MaxValue}" Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -178,20 +175,53 @@
                 </WrapPanel>
             </TabItem>
 
-            <TabItem Header="Testing">
+            <TabItem d:IsSelected="True" Header="Testing">
                 <WrapPanel Orientation="Vertical">
-                    <CheckBox Name="cbx_reintest" />
+                    <Label>
+                        Enable button
+                    </Label>
+                    <CheckBox Name="cb_test_enableButton" />
+
+                    <Label>Button progress</Label>
                     <Slider
-                        Name="slider_reintest"
+                        Name="sl_test_buttonProgress"
                         Maximum="100"
                         Value="50" />
+
+                    <Label>Message box content</Label>
+                    <TextBox
+                        Name="tbx_test_msgBoxMessage"
+                        AcceptsReturn="True"
+                        AcceptsTab="True" />
+
+                    <Label>Message box icon</Label>
+                    <ComboBox Name="cbx_test_msgBoxIcon" SelectedValuePath="Content">
+                        <ComboBoxItem Content="{x:Static MessageBoxImage.None}" IsSelected="True" />
+                        <ComboBoxItem Content="{x:Static MessageBoxImage.Information}" />
+                        <ComboBoxItem Content="{x:Static MessageBoxImage.Question}" />
+                        <ComboBoxItem Content="{x:Static MessageBoxImage.Warning}" />
+                        <ComboBoxItem Content="{x:Static MessageBoxImage.Error}" />
+                    </ComboBox>
+
+                    <Label>Message box buttons</Label>
+                    <ComboBox Name="cbx_test_msgBoxButtons" SelectedValuePath="Content">
+                        <ComboBoxItem Content="{x:Static MessageBoxButton.OK}" IsSelected="True" />
+                        <ComboBoxItem Content="{x:Static MessageBoxButton.OKCancel}" />
+                        <ComboBoxItem Content="{x:Static MessageBoxButton.YesNo}" />
+                        <ComboBoxItem Content="{x:Static MessageBoxButton.YesNoCancel}" />
+                    </ComboBox>
+
+                    <Label>Message box result</Label>
+                    <TextBlock Name="tb_test_msgBoxResult" />
+
                     <Button
-                        Name="btn_reintest"
+                        Name="btn_test_showMsgBox"
                         Grid.Row="2"
                         Grid.Column="1"
-                        Margin="0"
                         Padding="0"
-                        IsEnabled="{Binding IsChecked, ElementName=cbx_reintest}">
+                        HorizontalAlignment="Left"
+                        Click="btn_test_showMsgBox_Click"
+                        IsEnabled="{Binding IsChecked, ElementName=cb_test_enableButton}">
                         <Button.Resources>
                             <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
                                 <Style.Triggers>
@@ -237,12 +267,12 @@
                                 Height="Auto"
                                 Margin="0"
                                 Foreground="{StaticResource SquareBrush}"
-                                Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Collapsed;Visible, FallbackValue=Visible, ElementName=cbx_reintest}"
-                                Value="{Binding Value, ElementName=slider_reintest}" />
+                                Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Collapsed;Visible, FallbackValue=Visible, ElementName=cb_test_enableButton}"
+                                Value="{Binding Value, ElementName=sl_test_buttonProgress}" />
                             <TextBlock
                                 Padding="16,8"
                                 VerticalAlignment="Center"
-                                Text="Reincarnate!" />
+                                Text="Show MessageBoxEx" />
                         </Grid>
                     </Button>
                 </WrapPanel>

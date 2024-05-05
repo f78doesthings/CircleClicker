@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -63,7 +64,7 @@ namespace CircleClicker.UI.Windows
                 string xaml = $$"""
                         <DataTemplate>
                             <controls:{{(integer ? nameof(IntEntryControl) : nameof(DoubleEntryControl))}}
-                                MaxValue="{{(
+                                Maximum="{{(
                                     integer ? int.MaxValue.ToString(App.Culture) : double.MaxValue.ToString(App.Culture)
                                 )}}"
                                 Value="{Binding {{prop}}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -73,8 +74,8 @@ namespace CircleClicker.UI.Windows
                 ParserContext ctx = new() { XamlTypeMapper = new XamlTypeMapper([]) };
                 ctx.XamlTypeMapper.AddMappingProcessingInstruction(
                     "controls",
-                    typeof(DoubleEntryControl).Namespace,
-                    typeof(DoubleEntryControl).Assembly.FullName
+                    typeof(NumericEntryControl).Namespace,
+                    typeof(NumericEntryControl).Assembly.FullName
                 );
                 ctx.XmlnsDictionary.Add(
                     "",
@@ -162,8 +163,8 @@ namespace CircleClicker.UI.Windows
                 StackPanel panel = new();
                 Label label = new() { Content = prop };
                 dynamic input = integer
-                    ? new IntEntryControl() { MaxValue = int.MaxValue }
-                    : new DoubleEntryControl() { MaxValue = double.MaxValue };
+                    ? new IntEntryControl() { Maximum = int.MaxValue }
+                    : new DoubleEntryControl() { Maximum = double.MaxValue };
                 input.DataContext = Main.CurrentSave;
 
                 input.SetBinding(
@@ -216,6 +217,7 @@ namespace CircleClicker.UI.Windows
                 {
                     e.Cancel = true;
                     MessageBoxEx.Show(
+                        this,
                         "An error occured while saving changes.",
                         icon: MessageBoxImage.Error,
                         exception: ex
@@ -229,13 +231,12 @@ namespace CircleClicker.UI.Windows
 
 #pragma warning disable IDE1006 // Naming Styles
         private void btn_sampleData_Click(object sender, RoutedEventArgs e)
-#pragma warning restore IDE1006 // Naming Styles
         {
             MessageBoxResult result = MessageBoxEx.Show(
                 this,
-                "Are you sure you want to load the default buildings and upgrades?\n"
-                    + "Click Yes to overwrite the existing purchases with the default data.\n"
-                    + "Click No to delete any existing purchases.",
+                "Are you sure you want to load the default buildings and upgrades? This may impact save data.\n"
+                    + "Click <Bold>Yes</Bold> to update the existing purchases with the default data.\n"
+                    + "Click <Bold>No</Bold> to first delete any existing purchases. This will also remove all owned purchases from saves.",
                 MessageBoxButton.YesNoCancel,
                 MessageBoxImage.Question
             );
@@ -249,6 +250,7 @@ namespace CircleClicker.UI.Windows
                 catch (Exception ex)
                 {
                     MessageBoxEx.Show(
+                        this,
                         "An error occured while saving changes.",
                         icon: MessageBoxImage.Error,
                         exception: ex
@@ -256,5 +258,17 @@ namespace CircleClicker.UI.Windows
                 }
             }
         }
+
+        private void btn_test_showMsgBox_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBoxEx.Show(
+                this,
+                tbx_test_msgBoxMessage.Text,
+                (MessageBoxButton)cbx_test_msgBoxButtons.SelectedValue,
+                (MessageBoxImage)cbx_test_msgBoxIcon.SelectedValue
+            );
+            tb_test_msgBoxResult.Text = result.ToString();
+        }
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

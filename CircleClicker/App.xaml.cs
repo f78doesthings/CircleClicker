@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Navigation;
 using CircleClicker.Models;
 using CircleClicker.Models.Database;
 using CircleClicker.UI.Windows;
@@ -14,6 +15,8 @@ namespace CircleClicker
     /// </summary>
     public partial class App : Application
     {
+        public const string ErrorCategory = "Error";
+
         public static readonly CultureInfo Culture = CultureInfo.GetCultureInfo("en-US");
 
         private static Main Main_ => CircleClicker.Main.Instance;
@@ -61,6 +64,7 @@ namespace CircleClicker
                 if (processes.Length == 0)
                 {
                     shouldConnect = false;
+                    connectException = new Exception("The mysqld process is not running.");
                     Main_.IsDBAvailable = false;
                 }
             }
@@ -77,15 +81,16 @@ namespace CircleClicker
                     bool created = await Main_.DB.Database.EnsureCreatedAsync();
                     if (created)
                     {
-                        Mouse.OverrideCursor = null;
                         MessageBoxResult result = MessageBoxEx.Show(
                             progressBox,
-                            "Circle Clicker has set up a new database for you.\n"
-                                + "Would you like to add the default purchases and upgrades to this database?",
+                            "Circle Clicker has successfully created a database for you.\n"
+                                + "Would you like to add the default buildings and upgrades to this database?\n"
+                                + "\n"
+                                + "If you're unsure, click <Bold>Yes</Bold>.\n"
+                                + "<Span FontSize=\"10\">You can always import the default purchases at any time from the Admin Panel.</Span>",
                             MessageBoxButton.YesNo,
                             MessageBoxImage.Question
                         );
-                        Mouse.OverrideCursor = Cursors.Wait;
 
                         if (result == MessageBoxResult.Yes)
                         {
@@ -109,17 +114,20 @@ namespace CircleClicker
 
             if (!Main_.IsDBAvailable)
             {
-                Mouse.OverrideCursor = null;
                 MessageBoxResult result = MessageBoxEx.Show(
                     progressBox,
                     "An error occured while trying to communicate with the MySQL database.\n"
-                        + "You may still try out the game, but your progress will not be saved.",
-                    icon: MessageBoxImage.Error,
-                    exception: connectException
+                        + "You may still play the game in offline mode, but your progress won't be saved.\n"
+                        + "For more info on saving, click <Hyperlink NavigateUri=\"https://github.com/f78doesthings/CircleClicker#saving\">here</Hyperlink>.\n"
+                        + "\n"
+                        + "Click <Bold>Yes</Bold> to launch the game in offline mode, with the default data.\n"
+                        + "Click <Bold>No</Bold> to launch with no default data.",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Error,
+                    connectException
                 );
-                Mouse.OverrideCursor = Cursors.Wait;
 
-                if (result != MessageBoxResult.OK)
+                if (result is not MessageBoxResult.Yes and not MessageBoxResult.No)
                 {
                     progressBox.Close();
                     return;
@@ -131,6 +139,12 @@ namespace CircleClicker
                 Main_.Variables = [];
                 Main_.CurrentUser = new User("<Guest>", "") { IsAdmin = true };
                 Main_.CurrentSave = new Save(Main_.CurrentUser);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Main_.LoadSampleData();
+                }
+
                 startWindow = new MainWindow { Title = "Circle Clicker - Offline Mode" };
             }
             else
@@ -167,6 +181,21 @@ namespace CircleClicker
         {
             AudioPlaybackEngine.Instance.Dispose();
             Main_.DB.Dispose();
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"Error while trying to launch {e.Uri.AbsoluteUri}:\n{ex}",
+                    ErrorCategory
+                );
+            }
         }
     }
 }

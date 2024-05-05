@@ -116,9 +116,11 @@ public partial class CircleClickerContext : DbContext
             entity.ToTable("users");
 
             entity.Property(e => e.Id).HasColumnType("int(11)").HasColumnName("PK_users");
-            entity.Property(e => e.IsAdmin).HasColumnName("is_admin");
             entity.Property(e => e.Name).HasMaxLength(32).HasColumnName("name");
             entity.Property(e => e.Password).HasMaxLength(128).HasColumnName("password");
+            entity.Property(e => e.IsAdmin).HasColumnName("is_admin");
+            entity.Property(e => e.MusicVolume).HasColumnName("music_volume");
+            entity.Property(e => e.SoundVolume).HasColumnName("sound_volume");
         });
 
         modelBuilder.Entity<Purchase>(entity =>

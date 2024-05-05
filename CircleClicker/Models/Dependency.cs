@@ -92,55 +92,107 @@ namespace CircleClicker.Models
     public class ReadOnlyDependency : NotifyPropertyChanged, IReadOnlyDependency
     {
         #region Instances
+        /// <summary>
+        /// A list of all <see cref="ReadOnlyDependency"/> instances. Does not include <see cref="Dependency"/> instances.
+        /// </summary>
+        public static readonly List<ReadOnlyDependency> Instances = [];
+
         /// <inheritdoc cref="Save.TotalCircles"/>
         public static readonly ReadOnlyDependency TotalCircles =
-            new() { DependencyId = nameof(TotalCircles), Getter = s => s.TotalCircles };
+            new()
+            {
+                DependencyId = nameof(TotalCircles),
+                Name = "Circles earned (this incarnation)",
+                Getter = s => s.TotalCircles
+            };
 
         /// <inheritdoc cref="Save.ManualCircles"/>
         public static readonly ReadOnlyDependency ManualCircles =
-            new() { DependencyId = nameof(ManualCircles), Getter = s => s.ManualCircles };
+            new()
+            {
+                DependencyId = nameof(ManualCircles),
+                Name = "Circles earned from clicking (this incarnation)",
+                Getter = s => s.ManualCircles
+            };
 
         /// <inheritdoc cref="Save.TotalTriangles"/>
         public static readonly ReadOnlyDependency TotalTriangles =
-            new() { DependencyId = nameof(TotalTriangles), Getter = s => s.TotalTriangles };
+            new()
+            {
+                DependencyId = nameof(TotalTriangles),
+                Name = "Triangles earned (this incarnation)",
+                Getter = s => s.TotalTriangles
+            };
 
         /// <inheritdoc cref="Save.Clicks"/>
         public static readonly ReadOnlyDependency Clicks =
-            new() { DependencyId = nameof(Clicks), Getter = s => s.Clicks };
+            new()
+            {
+                DependencyId = nameof(Clicks),
+                Name = "Clicks (this incarnation)",
+                Getter = s => s.Clicks
+            };
 
         /// <inheritdoc cref="Save.TriangleClicks"/>
         public static readonly ReadOnlyDependency TriangleClicks =
-            new() { DependencyId = nameof(TriangleClicks), Getter = s => s.TriangleClicks };
+            new()
+            {
+                DependencyId = nameof(TriangleClicks),
+                Name = "Triangle clicks (this incarnation)",
+                Getter = s => s.TriangleClicks
+            };
 
         /// <inheritdoc cref="Save.LifetimeCircles"/>
         public static readonly ReadOnlyDependency LifetimeCircles =
-            new() { DependencyId = nameof(LifetimeCircles), Getter = s => s.LifetimeCircles };
+            new()
+            {
+                DependencyId = nameof(LifetimeCircles),
+                Name = "\nCircles earned (all time)",
+                Getter = s => s.LifetimeCircles
+            };
 
         /// <inheritdoc cref="Save.LifetimeManualCircles"/>
         public static readonly ReadOnlyDependency LifetimeManualCircles =
             new()
             {
                 DependencyId = nameof(LifetimeManualCircles),
+                Name = "Circles earned from clicking (all time)",
                 Getter = s => s.LifetimeManualCircles
             };
 
         /// <inheritdoc cref="Save.LifetimeTriangles"/>
         public static readonly ReadOnlyDependency LifetimeTriangles =
-            new() { DependencyId = nameof(LifetimeTriangles), Getter = s => s.LifetimeTriangles };
+            new()
+            {
+                DependencyId = nameof(LifetimeTriangles),
+                Name = "Triangles earned (all time)",
+                Getter = s => s.LifetimeTriangles
+            };
 
         /// <inheritdoc cref="Save.LifetimeSquares"/>
         public static readonly ReadOnlyDependency LifetimeSquares =
-            new() { DependencyId = nameof(LifetimeSquares), Getter = s => s.LifetimeSquares };
+            new()
+            {
+                DependencyId = nameof(LifetimeSquares),
+                Name = "Squares earned (all time)",
+                Getter = s => s.LifetimeSquares
+            };
 
         /// <inheritdoc cref="Save.LifetimeClicks"/>
         public static readonly ReadOnlyDependency LifetimeClicks =
-            new() { DependencyId = nameof(LifetimeClicks), Getter = s => s.LifetimeClicks };
+            new()
+            {
+                DependencyId = nameof(LifetimeClicks),
+                Name = "Clicks (all time)",
+                Getter = s => s.LifetimeClicks
+            };
 
         /// <inheritdoc cref="Save.LifetimeTriangleClicks"/>
         public static readonly ReadOnlyDependency LifetimeTriangleClicks =
             new()
             {
                 DependencyId = nameof(LifetimeTriangleClicks),
+                Name = "Triangle clicks (all time)",
                 Getter = s => s.LifetimeTriangleClicks
             };
         #endregion
@@ -163,6 +215,7 @@ namespace CircleClicker.Models
         protected virtual void Register()
         {
             IReadOnlyDependency.Register(this);
+            Instances.Add(this);
         }
 
         public override string ToString()
@@ -209,12 +262,12 @@ namespace CircleClicker.Models
     }
 
     /// <summary>
-    /// A currency that can be displayed with <see cref="UI.Controls.CurrencyDisplay"/>.
+    /// A game currency that can be displayed with <see cref="UI.Controls.CurrencyDisplay"/>.
     /// </summary>
     public class Currency : Dependency, IDependency
     {
         #region Instances
-        public static readonly List<Currency> Instances = [];
+        public static new readonly List<Currency> Instances = [];
 
         /// <inheritdoc cref="Save.Circles"/>
         public static readonly Currency Circles =
@@ -224,8 +277,9 @@ namespace CircleClicker.Models
                 Brush = Application.Current.TryFindResource("AccentBrush") as Brush,
                 Name = "Circles",
                 Icon = "⚫",
+
                 Getter = s => s.Circles,
-                ProductionGetter = m => m.TotalProduction,
+                ProductionGetter = m => m.Buildings.Sum(b => b.Production),
                 Setter = (s, v) => s.Circles = v
             };
 
@@ -241,6 +295,7 @@ namespace CircleClicker.Models
                 ),
                 Name = "Triangles",
                 Icon = "▼",
+
                 Getter = s => s.Triangles,
                 IsUnlockedGetter = s => s.LifetimeTriangles > 0,
                 Setter = (s, v) => s.Triangles = v
@@ -253,9 +308,17 @@ namespace CircleClicker.Models
                 Brush = Application.Current.TryFindResource("SquareBrush") as Brush,
                 Name = "Squares",
                 Icon = "⬛",
+
                 Getter = s => s.Squares,
-                PendingGetter = m => m.PendingSquares,
-                IsUnlockedGetter = s => s.LifetimeSquares > 0 || Main.Instance.PendingSquares > 0,
+                PendingGetter = m =>
+                    m.CurrentSave == null
+                    || m.CurrentSave.TotalCircles < Main.ReincarnationCost.Value
+                        ? 0
+                        : Math.Pow(
+                            m.CurrentSave.TotalCircles / Main.ReincarnationCost.Value,
+                            Main.SquarePower.Value
+                        ) * Stat.Squares.Value,
+                IsUnlockedGetter = s => s.LifetimeSquares > 0 || Squares?.Pending > 0,
                 Setter = (s, v) => s.Squares = v
             };
         #endregion
@@ -287,13 +350,13 @@ namespace CircleClicker.Models
         /// Whether this <see cref="Currency"/> is currently being produced.<br />
         /// Used by <see cref="UI.Controls.CurrencyDisplay"/> to determine whether to display production.
         /// </summary>
-        public bool IsProductionUnlocked => ProductionGetter != null && Production > 0;
+        public bool IsProduced => ProductionGetter != null && Production > 0;
 
         /// <summary>
         /// Whether there is any of this <see cref="Currency"/> currently pending.<br />
         /// Used by <see cref="UI.Controls.CurrencyDisplay"/> to determine whether to display pending currency.
         /// </summary>
-        public bool IsPendingUnlocked => PendingGetter != null && Pending > 0;
+        public bool IsPending => PendingGetter != null && Pending > 0;
 
         public int AffordableUpgrades =>
             Main.Instance.Upgrades.Count(v => v.Currency == this && v.CanAfford);

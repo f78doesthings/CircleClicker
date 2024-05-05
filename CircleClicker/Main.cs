@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CircleClicker.Models;
 using CircleClicker.Models.Database;
-using CircleClicker.UI.Windows;
 using CircleClicker.Utils;
 
 namespace CircleClicker
@@ -117,52 +116,94 @@ namespace CircleClicker
         /// A list of all game variables.
         /// </summary>
         public ObservableCollection<Variable> Variables { get; set; } = null!; // Set during App.Application_Startup
-
-        // TODO: consider moving these to the Currency getters
-        /// <summary>
-        /// Returns the total production of all buildings.
-        /// </summary>
-        public double TotalProduction => Buildings.Sum(b => b.Production);
-
-        /// <summary>
-        /// The number of squares that can currently be earned by reincarnating.
-        /// </summary>
-        public double PendingSquares =>
-            CurrentSave == null || CurrentSave.TotalCircles < ReincarnationCost
-                ? 0
-                : Math.Pow(CurrentSave.TotalCircles / ReincarnationCost, SquarePower)
-                    * Stat.Squares.Value;
-
-        // TODO: ...and moving these to MainWindow
-        /// <summary>
-        /// Whether the player can currently reincarnate.
-        /// </summary>
-        public bool CanReincarnate => PendingSquares > 0;
-
-        /// <summary>
-        /// Used by MainWindow to show a progress bar for the reincarnation button.
-        /// </summary>
-        public double ReincarnateProgress =>
-            CurrentSave == null || CanReincarnate
-                ? 0
-                : Math.Log(CurrentSave.TotalCircles + 1) / Math.Log(ReincarnationCost + 1) * 100;
-
-        /// <summary>
-        /// The text to display on the <see cref="MainWindow.btn_reincarnate"/> button.
-        /// </summary>
-        public string PendingSquaresText =>
-            CanReincarnate
-                ? "Reincarnate!"
-                : $"Earn {Currency.Circles.Format(ReincarnationCost)} to unlock";
         #endregion
 
         #region Methods
         /// <summary>
+        /// Runs all timed game logic, such as building production.
+        /// </summary>
+        public void Tick()
+        {
+            if (CurrentSave == null || IsAutosavingEnabled != true)
+            {
+                return;
+            }
+
+            // Calculate the time since the last Tick call
+            DateTime now = DateTime.Now;
+            TimeSpan deltaTimeSpan = now - (_lastTick ?? now);
+            double deltaTime = deltaTimeSpan.TotalSeconds;
+            _lastTick = now;
+
+            // Calculate the time since the last save
+            _lastSave ??= now;
+            TimeSpan? timeSinceLastSave = now - _lastSave;
+            if (timeSinceLastSave?.TotalSeconds >= AutosaveInterval)
+            {
+                _lastSave = now;
+                _ = SaveAsync(); // Exceptions will be stored in LastSaveException
+            }
+
+            // Calculate the number of circles produced this tick
+            CurrentSave.Circles += Currency.Circles.Production * deltaTime;
+
+            // This will update various things in MainWindow
+            foreach (Building building in Buildings)
+            {
+                building.InvokePropertyChanged(
+                    nameof(building.IsUnlocked),
+                    nameof(building.CanAfford)
+                );
+            }
+
+            foreach (Upgrade upgrade in Upgrades)
+            {
+                upgrade.InvokePropertyChanged(
+                    nameof(upgrade.IsUnlocked),
+                    nameof(upgrade.CanAfford)
+                );
+            }
+
+            foreach (Currency currency in Currency.Instances)
+            {
+                currency.InvokePropertyChanged(nameof(currency.AffordableUpgrades));
+            }
+
+            /*InvokePropertyChanged(
+                nameof(PendingSquares),
+                nameof(CanReincarnate),
+                nameof(PendingSquaresText),
+                nameof(ReincarnateProgress)
+            );*/
+            Currency.Squares.InvokePropertyChanged(
+                nameof(Currency.Pending),
+                nameof(Currency.IsPending),
+                nameof(Currency.IsUnlocked)
+            );
+        }
+
+        /// <summary>
+        /// Runs all <b>offline</b> timed game logic, and returns the number of circles produced.
+        /// </summary>
+        public void TickOffline(double deltaTime, out double circlesProduced)
+        {
+            circlesProduced = 0;
+            if (CurrentSave == null)
+            {
+                return;
+            }
+
+            circlesProduced =
+                Currency.Circles.Production * Stat.OfflineProduction.Value * deltaTime;
+            CurrentSave.Circles += circlesProduced;
+        }
+
+        /// <summary>
         /// Updates CurrentSave.LastSaveDate and saves all changes to the database asynchronously.
         /// </summary>
-        public async Task SaveAsync()
+        public async Task SaveAsync(bool manual = false)
         {
-            if (CurrentSave == null || IsAutosavingEnabled != true || IsSaving)
+            if (CurrentSave == null || (IsAutosavingEnabled != true && !manual) || IsSaving)
             {
                 return;
             }
@@ -215,84 +256,6 @@ namespace CircleClicker
             }
 
             IsSaving = false;
-        }
-
-        /// <summary>
-        /// Runs all <b>offline</b> timed game logic, and returns the number of circles produced.
-        /// </summary>
-        public void TickOffline(double deltaTime, out double circlesProduced)
-        {
-            circlesProduced = 0;
-            if (CurrentSave == null)
-            {
-                return;
-            }
-
-            circlesProduced = TotalProduction * Stat.OfflineProduction.Value * deltaTime;
-            CurrentSave.Circles += circlesProduced;
-        }
-
-        /// <summary>
-        /// Runs all timed game logic, such as building production.
-        /// </summary>
-        public void Tick()
-        {
-            if (CurrentSave == null || IsAutosavingEnabled != true)
-            {
-                return;
-            }
-
-            // Calculate the time since the last Tick call
-            DateTime now = DateTime.Now;
-            TimeSpan deltaTimeSpan = now - (_lastTick ?? now);
-            double deltaTime = deltaTimeSpan.TotalSeconds;
-            _lastTick = now;
-
-            // Calculate the time since the last save
-            _lastSave ??= now;
-            TimeSpan? timeSinceLastSave = now - _lastSave;
-            if (timeSinceLastSave?.TotalSeconds >= AutosaveInterval)
-            {
-                _lastSave = now;
-                _ = SaveAsync(); // Exceptions will be stored in LastSaveException
-            }
-
-            // Calculate the number of circles produced this tick
-            CurrentSave.Circles += TotalProduction * deltaTime;
-
-            // This will update various things in MainWindow
-            foreach (Building building in Buildings)
-            {
-                building.InvokePropertyChanged(
-                    nameof(building.IsUnlocked),
-                    nameof(building.CanAfford)
-                );
-            }
-
-            foreach (Upgrade upgrade in Upgrades)
-            {
-                upgrade.InvokePropertyChanged(
-                    nameof(upgrade.IsUnlocked),
-                    nameof(upgrade.CanAfford)
-                );
-            }
-
-            foreach (Currency currency in Currency.Instances)
-            {
-                currency.InvokePropertyChanged(nameof(currency.AffordableUpgrades));
-            }
-
-            InvokePropertyChanged(
-                nameof(PendingSquares),
-                nameof(CanReincarnate),
-                nameof(PendingSquaresText),
-                nameof(ReincarnateProgress)
-            );
-            Currency.Squares.InvokePropertyChanged(
-                nameof(Currency.Pending),
-                nameof(Currency.IsPendingUnlocked),
-                nameof(Currency.IsUnlocked)
-            );
         }
 
         /// <summary>

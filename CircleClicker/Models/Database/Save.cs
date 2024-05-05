@@ -1,4 +1,5 @@
-﻿using CircleClicker.Utils;
+﻿using System.Collections.ObjectModel;
+using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 
@@ -306,6 +307,5 @@ public partial class Save : NotifyPropertyChanged
         User = user;
     }
 
-    public virtual ICollection<OwnedPurchase> OwnedPurchases { get; set; } =
-        new List<OwnedPurchase>();
+    public virtual List<OwnedPurchase> OwnedPurchases { get; set; } = [];
 }

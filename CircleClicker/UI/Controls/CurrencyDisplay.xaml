@@ -40,7 +40,7 @@
             FontSize="16"
             Foreground="{StaticResource DimForegroundBrush}"
             Text="{Binding Production, Converter={StaticResource SuffixFormatter}, StringFormat=+{0}/s, FallbackValue=+123\,456/s}"
-            Visibility="{Binding IsProductionUnlocked, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            Visibility="{Binding IsProduced, Converter={StaticResource BooleanToVisibilityConverter}}" />
         <TextBlock
             Grid.Column="2"
             Margin="0,0,16,2"
@@ -49,7 +49,7 @@
             FontSize="16"
             Foreground="{StaticResource DimForegroundBrush}"
             Text="{Binding Pending, Converter={StaticResource SuffixFormatter}, StringFormat=+{0}, FallbackValue=+123\,456}"
-            Visibility="{Binding IsPendingUnlocked, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}" />
+            Visibility="{Binding IsPending, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}" />
         <TextBlock
             Margin="9,0,0,0"
             Padding="0,0,0,2"

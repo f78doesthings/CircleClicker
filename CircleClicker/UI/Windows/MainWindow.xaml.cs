@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,16 +19,50 @@ namespace CircleClicker.UI.Windows
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        #region Properties for use with bindings
 #pragma warning disable CA1822 // Mark members as static
         public Main Main => Main.Instance;
-#pragma warning restore CA1822 // Mark members as static
 
         public Save Save =>
             Main.CurrentSave ?? throw new NullReferenceException("Main.CurrentSave is null.");
 
+        /// <summary>
+        /// Used to set the visibility of admin-only buttons, such as <see cref="btn_admin"/>.
+        /// </summary>
         public bool IsAdmin => Main.CurrentUser?.IsAdmin == true;
+
+        /// <summary>
+        /// Used to enable or disable <see cref="btn_reincarnate"/>.
+        /// </summary>
+        public bool CanReincarnate => Currency.Squares.IsPending;
+
+        /// <summary>
+        /// Used to set the visibility of the progress bar in <see cref="btn_reincarnate"/>.
+        /// </summary>
+        public Visibility ShowReincarnateProgress =>
+            Currency.Squares.IsPending ? Visibility.Collapsed : Visibility.Visible;
+
+        /// <summary>
+        /// Used by <see cref="btn_reincarnate"/> to show a progress bar for the reincarnation button.
+        /// </summary>
+        public double ReincarnateProgress =>
+            Currency.Squares.IsPending
+                ? 100
+                : Math.Log10((Save.TotalCircles / 10) + 1)
+                    / Math.Log10((Main.ReincarnationCost.Value / 10) + 1)
+                    * 100;
+
+        /// <summary>
+        /// The text to display on the <see cref="btn_reincarnate"/> button.
+        /// </summary>
+        public string PendingSquaresText =>
+            Currency.Squares.IsPending
+                ? "Reincarnate!"
+                : $"Earn {Currency.Circles.Format(Main.ReincarnationCost.Value)} to unlock";
+#pragma warning restore CA1822 // Mark members as static
+        #endregion
 
         private readonly DispatcherTimer _timer;
         private DateTime _lastUpdate;
@@ -148,12 +183,29 @@ namespace CircleClicker.UI.Windows
             purchasedTab.Content = purchasedItems;
             tc_upgrades.Items.Add(purchasedTab);
 
+            // Start music playback
+            try
+            {
+                AudioPlaybackEngine.Instance.PlayMusic();
+            }
+            catch (Exception ex)
+            {
+                if (ex is not DirectoryNotFoundException) // Ignore when the directory doesn't exist or is empty
+                {
+                    MessageBoxEx.Show(
+                        "An error occured while trying to start music playback.",
+                        icon: MessageBoxImage.Error,
+                        exception: ex
+                    );
+                }
+            }
+
             // Timed stuff
             _timer = new DispatcherTimer(DispatcherPriority.Normal)
             {
                 Interval = TimeSpan.FromSeconds(Main.TickInterval)
             };
-            _timer.Tick += (_, _) => Main.Tick();
+            _timer.Tick += Tick;
             _timer.Start();
 
             CompositionTarget.Rendering += Draw;
@@ -175,7 +227,18 @@ namespace CircleClicker.UI.Windows
             }
         }
 
-        private async void Window_Closing(object sender, CancelEventArgs e)
+        private void Tick(object? sender, EventArgs e)
+        {
+            Main.Tick();
+            OnPropertyChanged(
+                nameof(CanReincarnate),
+                nameof(ShowReincarnateProgress),
+                nameof(ReincarnateProgress),
+                nameof(PendingSquaresText)
+            );
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (!_timer.IsEnabled || !Main.IsDBAvailable)
             {
@@ -183,48 +246,51 @@ namespace CircleClicker.UI.Windows
             }
 
             e.Cancel = true;
-            try
+            Dispatcher.InvokeAsync(async () =>
             {
-                if (Main.IsSaving)
+                try
                 {
-                    while (Main.IsSaving)
+                    if (Main.IsSaving)
                     {
-                        Thread.Sleep(50);
+                        while (Main.IsSaving)
+                        {
+                            Thread.Sleep(50);
+                        }
+                    }
+                    else
+                    {
+                        await Main.SaveAsync(true);
+                    }
+
+                    if (Main.LastSaveException != null)
+                    {
+                        throw Main.LastSaveException;
+                    }
+                    else
+                    {
+                        _timer.Stop();
+                        CompositionTarget.Rendering -= Draw;
+                        Close();
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    await Main.SaveAsync();
-                }
+                    MessageBoxResult result = MessageBoxEx.Show(
+                        this,
+                        "Something went wrong while saving your data. You may lose progress if you choose to quit now.\nAre you sure you want to quit?",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Error,
+                        ex
+                    );
 
-                if (Main.LastSaveException != null)
-                {
-                    throw Main.LastSaveException;
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _timer.Stop();
+                        CompositionTarget.Rendering -= Draw;
+                        Close();
+                    }
                 }
-                else
-                {
-                    _timer.Stop();
-                    CompositionTarget.Rendering -= Draw;
-                    Dispatcher.Invoke(Close);
-                }
-            }
-            catch
-            {
-                MessageBoxResult result = MessageBoxEx.Show(
-                    this,
-                    "Something went wrong while saving your data. You may lose progress if you choose to quit now.\nAre you sure you want to quit?",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Error,
-                    Main.LastSaveException
-                );
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    _timer.Stop();
-                    CompositionTarget.Rendering -= Draw;
-                    Dispatcher.Invoke(Close);
-                }
-            }
+            });
         }
 
 #pragma warning disable IDE1006 // Naming Styles
@@ -306,7 +372,7 @@ namespace CircleClicker.UI.Windows
 
         private void btn_reincarnate_Click(object sender, RoutedEventArgs e)
         {
-            if (!Main.CanReincarnate)
+            if (!Currency.Squares.IsPending)
             {
                 return;
             }
@@ -314,7 +380,7 @@ namespace CircleClicker.UI.Windows
             MessageBoxResult result = MessageBoxEx.Show(
                 this,
                 $"By reincarnating, you will lose all of your circles, triangles, buildings, circle upgrades and triangle upgrades.\n"
-                    + $"In return, you'll receive {Currency.Squares.Format(Main.PendingSquares)}, which you can spend on powerful, permanent upgrades.\n"
+                    + $"In return, you'll receive {Currency.Squares.Format(Currency.Squares.Pending)}, which you can spend on powerful, permanent upgrades.\n"
                     + $"Are you sure you want to do this?",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question
@@ -323,7 +389,7 @@ namespace CircleClicker.UI.Windows
             if (result == MessageBoxResult.Yes)
             {
                 Main.IsAutosavingEnabled = null;
-                Save.Squares += Main.PendingSquares;
+                Save.Squares += Currency.Squares.Pending;
 
                 foreach (Building building in Main.Buildings)
                 {
@@ -365,5 +431,22 @@ namespace CircleClicker.UI.Windows
             AudioPlaybackEngine.Instance.PlaySound(Sounds.ClickOff, variation: 0.1);
         }
 #pragma warning restore IDE1006 // Naming Styles
+
+        #region INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged(params string[] propNames)
+        {
+            if (Main.Instance.IsAutosavingEnabled == false)
+            {
+                return;
+            }
+
+            foreach (string prop in propNames)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+            }
+        }
+        #endregion
     }
 }

@@ -10,9 +10,15 @@ namespace CircleClicker.Models.Database;
 public abstract partial class Purchase : NotifyPropertyChanged, IDependency
 {
     #region Model
-    public int Id { get; set; }
-
     private string _name = "";
+    private double _requiredAmount;
+    private double _requirementScaling;
+    private bool _requirementAdditive;
+    private double _baseCost;
+    private double _costScaling;
+    private int _maxAmount;
+
+    public int Id { get; set; }
 
     /// <summary>
     /// The display name of the purchase.
@@ -36,8 +42,6 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
         set => Requires = IReadOnlyDependency.Instances.Find(v => v.DependencyId == value);
     }
 
-    private double _requiredAmount;
-
     /// <summary>
     /// The base amount needed to unlock this purchase.
     /// </summary>
@@ -50,8 +54,6 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
             OnPropertyChanged([nameof(IsUnlocked), nameof(CanAfford)]);
         }
     }
-
-    private double _requirementScaling;
 
     /// <summary>
     /// If <see cref="RequirementAdditive"/> is <see langword="true"/>, how much is added to the requirement with each level.<br />
@@ -66,8 +68,6 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
             OnPropertyChanged([nameof(IsUnlocked), nameof(CanAfford)]);
         }
     }
-
-    private bool _requirementAdditive;
 
     /// <summary>
     /// Whether the requirement scales linearly or exponentially.
@@ -91,8 +91,6 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
         set => Currency = IDependency.Instances.Find(v => v.DependencyId == value)!;
     }
 
-    private double _baseCost;
-
     /// <summary>
     /// The base cost of the purchase.
     /// </summary>
@@ -105,8 +103,6 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
             OnPropertyChanged([nameof(Cost), nameof(CostText), nameof(CanAfford)]);
         }
     }
-
-    private double _costScaling;
 
     /// <summary>
     /// The amount the cost is multiplied by for every single one of this purchase owned.
@@ -121,8 +117,6 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
         }
     }
 
-    private int _maxAmount;
-
     /// <summary>
     /// The maximum amount of this purchase you can have.
     /// </summary>
@@ -132,18 +126,21 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
         set
         {
             _maxAmount = value;
-            OnPropertyChanged();
+            OnPropertyChanged([nameof(AmountText)]);
 
-            // This will make sure that Amount does not exceed MaxAmount after changing it
-#pragma warning disable CA2245 // Do not assign a property to itself
-            Amount = Amount;
-#pragma warning restore CA2245 // Do not assign a property to itself
+            if (value > 0)
+            {
+                Amount = Math.Min(Amount, value);
+            }
         }
     }
     #endregion
 
     #region Dependency references
     private IReadOnlyDependency? _requires;
+
+    [MaybeNull]
+    private IDependency _currency;
 
     /// <summary>
     /// The dependency that needs to be above <see cref="BaseRequirement"/> to be able to purchase this upgrade.<br />
@@ -159,9 +156,6 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
             OnPropertyChanged([nameof(Requires), nameof(IsUnlocked), nameof(CanAfford)]);
         }
     }
-
-    [MaybeNull]
-    private IDependency _currency;
 
     /// <summary>
     /// The <see cref="IDependency"/> used to purchase this upgrade.<br />

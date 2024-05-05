@@ -9,7 +9,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CircleClicker.Tests", "Circ
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A6E72DF3-D1EC-4961-80FD-91341A1E1DFC}"
 	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{2EE0E350-5EFE-4EC0-B9BB-9B04A0BBDB8E}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\README.md = Assets\README.md
 	EndProjectSection
 EndProject
 Global
@@ -28,6 +35,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2EE0E350-5EFE-4EC0-B9BB-9B04A0BBDB8E} = {A6E72DF3-D1EC-4961-80FD-91341A1E1DFC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AE512B76-6A7C-4130-A436-C452B7A297E8}

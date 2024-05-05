@@ -1,6 +1,24 @@
 ﻿namespace CircleClicker.Models.Database
 {
     /// <summary>
+    /// A game variable that can be stored in the database.
+    /// </summary>
+    public class Variable
+    {
+        public int Id { get; set; }
+
+        /// <summary>
+        /// The name of the variable.
+        /// </summary>
+        public required string Name { get; set; }
+
+        /// <summary>
+        /// The value of the variable.
+        /// </summary>
+        public double Value { get; set; }
+    }
+
+    /// <summary>
     /// A reference to a <see cref="Variable"/>.
     /// </summary>
     public class VariableReference
@@ -55,23 +73,5 @@
         {
             return instance.Value;
         }
-    }
-
-    /// <summary>
-    /// A game variable that can be stored in the database.
-    /// </summary>
-    public class Variable
-    {
-        public int Id { get; set; }
-
-        /// <summary>
-        /// The name of the variable.
-        /// </summary>
-        public required string Name { get; set; }
-
-        /// <summary>
-        /// The value of the variable.
-        /// </summary>
-        public double Value { get; set; }
     }
 }

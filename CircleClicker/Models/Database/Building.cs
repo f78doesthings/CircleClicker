@@ -16,10 +16,9 @@ public class Building : Purchase, IStat
         {
             _baseProduction = value;
             OnPropertyChanged([nameof(Value), nameof(Production)]);
-            Main.Instance.InvokePropertyChanged(nameof(Main.TotalProduction));
             Models.Currency.Circles.InvokePropertyChanged(
                 nameof(Models.Currency.Production),
-                nameof(Models.Currency.IsProductionUnlocked)
+                nameof(Models.Currency.IsProduced)
             );
         }
     }
@@ -33,10 +32,9 @@ public class Building : Purchase, IStat
         {
             base.Amount = value;
             InvokePropertyChanged(nameof(Production));
-            Main.Instance.InvokePropertyChanged(nameof(Main.TotalProduction));
             Models.Currency.Circles.InvokePropertyChanged(
                 nameof(Models.Currency.Production),
-                nameof(Models.Currency.IsProductionUnlocked)
+                nameof(Models.Currency.IsProduced)
             );
         }
     }
@@ -70,12 +68,11 @@ public class Building : Purchase, IStat
 
     internal override void CopyTo(Purchase other)
     {
-        if (other is not Building building)
-        {
-            throw new ArgumentException("other is not a Building.", nameof(other));
-        }
-
         base.CopyTo(other);
-        building.BaseProduction = BaseProduction;
+
+        if (other is Building building)
+        {
+            building.BaseProduction = BaseProduction;
+        }
     }
 }

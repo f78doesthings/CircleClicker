@@ -8,8 +8,15 @@ namespace CircleClicker.Utils.Audio
     /// </summary>
     public class CachedSound
     {
-        public byte[] AudioData { get; private set; }
-        public WaveFormat WaveFormat { get; private set; }
+        /// <summary>
+        /// The cached wave audio data.
+        /// </summary>
+        public byte[] AudioData { get; }
+
+        /// <summary>
+        /// The wave format of the audio data. Should always be <see cref="AudioPlaybackEngine.TargetWaveFormat"/>.
+        /// </summary>
+        public WaveFormat WaveFormat { get; }
 
         /// <summary>
         /// Creates a new <see cref="CachedSound"/> from a file.<br />

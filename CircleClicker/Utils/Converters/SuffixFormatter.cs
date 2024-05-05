@@ -78,17 +78,17 @@ namespace CircleClicker.Utils.Converters
             }
 
             double numAbs = Math.Abs(number);
+            int numLog10 = (int)Math.Floor(Math.Max(Math.Log10(numAbs), 0)); // Effectively the number of digits in the given number, minus 1
+            int numDecimals = Math.Max(MinSignificantDigits - 1 - (numLog10 % 3), 0); // The number of digits to display after the dot
+
             if (numAbs >= 1_000 && numAbs < 1_000_000)
             {
-                // Format these numbers with the default number formatter (and the format N0, which will seperate it with commas)
-                return Math.Floor(number).ToString(format ?? "N0", formatProvider);
+                // Format these numbers with the default number formatter to seperate it with commas
+                return Math.Floor(number).ToString(format ?? ("N" + numDecimals), formatProvider);
             }
 
-            int numLog10 = (int)Math.Floor(Math.Max(Math.Log10(numAbs), 0)); // Effectively the number of digits in the given number, minus 1
             int index = numLog10 / 3; // The index into the suffixes list
             string suffix = Suffixes[index]; // The suffix to use
-
-            int numDecimals = Math.Max(MinSignificantDigits - 1 - (numLog10 % 3), 0); // The number of digits to display after the dot
             double numberPart = number / Math.Pow(1000, index);
 
             if (format == null)

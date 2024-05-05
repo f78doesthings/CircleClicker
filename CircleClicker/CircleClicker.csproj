@@ -11,12 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Sounds\ClickOff.mp3" />
-    <None Remove="Resources\Sounds\ClickOn.mp3" />
+    <None Remove="Resources\Music\f78 - rivers.mp3" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Resources\Icon.ico" />
+    <Content Include="Resources\Music\f78 - rivers.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Resources\Sounds\ClickOff.mp3" />
     <Resource Include="Resources\Sounds\ClickOn.mp3" />
     <Resource Include="Resources\Sounds\Collect.mp3" />

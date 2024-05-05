@@ -1,10 +1,14 @@
-﻿using System.ComponentModel;
+﻿using System.Collections;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Media;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CircleClicker.Utils;
@@ -97,7 +101,36 @@ namespace CircleClicker.UI.Windows
         public string Message
         {
             get => tb_message.Text;
-            set => tb_message.Text = value;
+            set
+            {
+                try
+                {
+                    // https://stackoverflow.com/questions/53508956/wpf-c-sharp-how-to-set-formatted-text-in-textblock-using-text-property
+                    TextBlock textBlock = (TextBlock)
+                        XamlReader.Parse(
+                            $"""
+                            <TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+                                {value
+                                .Replace(
+                                    "\n\n",
+                                    "<LineBreak /><InlineUIContainer><Grid Height=\"10\" /></InlineUIContainer><LineBreak />"
+                                )
+                                .Replace("\n", "<LineBreak />")}
+                            </TextBlock>
+                            """
+                        );
+                    tb_message.Inlines.Clear();
+                    tb_message.Inlines.AddRange(textBlock.Inlines.ToList());
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(
+                        $"Could not parse message:\n{ex}\n\nMessage:\n{value}",
+                        "Errors"
+                    );
+                    tb_message.Text = value;
+                }
+            }
         }
 
         /// <summary>
@@ -158,7 +191,25 @@ namespace CircleClicker.UI.Windows
                     exp_exception.Visibility = Visibility.Visible;
                     run_exceptionType.Text = $"{value.GetType()}:";
                     run_exceptionMessage.Text = value.Message;
-                    tb_exceptionStackTrace.Text = value.StackTrace;
+
+                    string details = "";
+                    if (value.Data.Count > 0)
+                    {
+                        details += "Extra details:";
+                        foreach (DictionaryEntry kvp in value.Data)
+                        {
+                            details += $"\n  \"{kvp.Key}\": {kvp.Value}";
+                        }
+                        details += "\n\n";
+                    }
+
+                    if (value.InnerException != null)
+                    {
+                        details += $"Caused by:\n  {value.InnerException}\n\n";
+                    }
+
+                    details += "Stack trace:\n" + value.StackTrace;
+                    tb_exceptionStackTrace.Text = details;
                 }
                 else
                 {
@@ -297,7 +348,11 @@ namespace CircleClicker.UI.Windows
                     break;
             }
 
+            var prevCursor = Mouse.OverrideCursor;
+            Mouse.OverrideCursor = null;
+
             messageBox.ShowDialog();
+            Mouse.OverrideCursor = prevCursor;
 
             return messageBox.ClickedButton != null
                 ? buttons.GetValueOrDefault(messageBox.ClickedButton)
