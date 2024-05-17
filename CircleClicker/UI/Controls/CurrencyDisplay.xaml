@@ -3,8 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:CircleClicker.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:CircleClicker.UI.Controls"
     xmlns:models="clr-namespace:CircleClicker.Models"
     Height="45"
     Margin="5,0,5,10"
@@ -15,7 +15,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="37" />
-            <ColumnDefinition Width="Auto" MinWidth="115" />
+            <ColumnDefinition Width="Auto" MinWidth="145" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Border
@@ -31,7 +31,7 @@
             FontSize="24"
             FontWeight="Bold"
             Foreground="{StaticResource ForegroundBrush}"
-            Text="{Binding Value, Converter={StaticResource SuffixFormatter}, FallbackValue=123\,456}" />
+            Text="{Binding Value, Converter={StaticResource SuffixFormatter}, FallbackValue=1.23 NoDe}" />
         <TextBlock
             Grid.Column="2"
             Margin="0,0,16,2"
@@ -39,7 +39,7 @@
             VerticalAlignment="Center"
             FontSize="16"
             Foreground="{StaticResource DimForegroundBrush}"
-            Text="{Binding Production, Converter={StaticResource SuffixFormatter}, StringFormat=+{0}/s, FallbackValue=+123\,456/s}"
+            Text="{Binding Production, Converter={StaticResource SuffixFormatter}, StringFormat=+{0}/s, FallbackValue=+1.23 NoDe/s}"
             Visibility="{Binding IsProduced, Converter={StaticResource BooleanToVisibilityConverter}}" />
         <TextBlock
             Grid.Column="2"
@@ -48,7 +48,7 @@
             VerticalAlignment="Center"
             FontSize="16"
             Foreground="{StaticResource DimForegroundBrush}"
-            Text="{Binding Pending, Converter={StaticResource SuffixFormatter}, StringFormat=+{0}, FallbackValue=+123\,456}"
+            Text="{Binding Pending, Converter={StaticResource SuffixFormatter}, StringFormat=+{0}, FallbackValue=+1.23 NoDe}"
             Visibility="{Binding IsPending, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}" />
         <TextBlock
             Margin="9,0,0,0"

@@ -1,5 +1,5 @@
-﻿using System.Collections.ObjectModel;
-using CircleClicker.Utils.Audio;
+﻿using CircleClicker.Utils.Audio;
+using System.Collections.ObjectModel;
 
 namespace CircleClicker.Models.Database;
 

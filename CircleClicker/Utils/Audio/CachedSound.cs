@@ -1,5 +1,5 @@
-﻿using System.IO;
-using NAudio.Wave;
+﻿using NAudio.Wave;
+using System.IO;
 
 namespace CircleClicker.Utils.Audio
 {

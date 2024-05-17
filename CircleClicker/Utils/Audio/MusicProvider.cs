@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+﻿using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 
 namespace CircleClicker.Utils.Audio
 {
@@ -127,13 +127,12 @@ namespace CircleClicker.Utils.Audio
         [MemberNotNull(nameof(_provider), nameof(_reader))]
         public void Next()
         {
-            Next(null);
+            Next([]);
         }
 
         [MemberNotNull(nameof(_provider), nameof(_reader))]
-        private void Next(Dictionary<string, Exception>? exceptions)
+        private void Next(Dictionary<string, Exception> exceptions)
         {
-            exceptions ??= [];
             _reader?.Dispose();
 
             _index = (_index + 1) % _playlist.Length;

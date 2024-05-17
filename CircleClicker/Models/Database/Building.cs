@@ -46,6 +46,10 @@ public class Building : Purchase, IStat
     #endregion
 
     #region IStat implementation
+    public double DefaultValue => IStat.DefaultValue(this, 1);
+
+    string IStat.Name => $"{Name} production multiplier";
+
     string IStat.StatId => DependencyId;
 
     string IStat.Description => $"{Name} production is increased by x{{0}}.";

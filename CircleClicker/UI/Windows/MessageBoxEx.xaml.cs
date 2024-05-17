@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿using CircleClicker.Utils;
+using System.Collections;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Media;
 using System.Runtime.CompilerServices;
@@ -8,10 +8,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using CircleClicker.Utils;
 
 namespace CircleClicker.UI.Windows
 {
@@ -103,33 +101,8 @@ namespace CircleClicker.UI.Windows
             get => tb_message.Text;
             set
             {
-                try
-                {
-                    // https://stackoverflow.com/questions/53508956/wpf-c-sharp-how-to-set-formatted-text-in-textblock-using-text-property
-                    TextBlock textBlock = (TextBlock)
-                        XamlReader.Parse(
-                            $"""
-                            <TextBlock xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-                                {value
-                                .Replace(
-                                    "\n\n",
-                                    "<LineBreak /><InlineUIContainer><Grid Height=\"10\" /></InlineUIContainer><LineBreak />"
-                                )
-                                .Replace("\n", "<LineBreak />")}
-                            </TextBlock>
-                            """
-                        );
-                    tb_message.Inlines.Clear();
-                    tb_message.Inlines.AddRange(textBlock.Inlines.ToList());
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(
-                        $"Could not parse message:\n{ex}\n\nMessage:\n{value}",
-                        "Errors"
-                    );
-                    tb_message.Text = value;
-                }
+                tb_message.Inlines.Clear();
+                tb_message.Inlines.AddRange(Helpers.ParseInlines(value));
             }
         }
 
@@ -208,7 +181,11 @@ namespace CircleClicker.UI.Windows
                         details += $"Caused by:\n  {value.InnerException}\n\n";
                     }
 
-                    details += "Stack trace:\n" + value.StackTrace;
+                    if (value.StackTrace != null && value.StackTrace != "")
+                    {
+                        details += "Stack trace:\n" + value.StackTrace;
+                    }
+
                     tb_exceptionStackTrace.Text = details;
                 }
                 else

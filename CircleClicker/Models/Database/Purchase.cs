@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using CircleClicker.Utils;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 
@@ -128,10 +128,11 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
             _maxAmount = value;
             OnPropertyChanged([nameof(AmountText)]);
 
-            if (value > 0)
-            {
-                Amount = Math.Min(Amount, value);
-            }
+            // FIXME: This causes purchases to get duplicated when calling LoadSampleData(false)
+            //if (value > 0)
+            //{
+            //    Amount = Math.Min(Amount, value);
+            //}
         }
     }
     #endregion

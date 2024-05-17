@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CircleClicker.Models.Database;
+﻿using CircleClicker.Models.Database;
 using CircleClicker.Utils;
+using CircleClicker.Utils.Audio;
+using System.Numerics;
 
 namespace CircleClicker.Models
 {
@@ -48,7 +44,7 @@ namespace CircleClicker.Models
         public T DefaultValue { get; init; }
 
         /// <inheritdoc cref="ISetting.Value" />
-        public T Value
+        public virtual T Value
         {
             get => Main.Instance.CurrentUser == null ? default : Getter(Main.Instance.CurrentUser);
             set
@@ -75,29 +71,61 @@ namespace CircleClicker.Models
         }
     }
 
-    public class FloatSetting : Setting<float>;
+    public abstract class NumberSetting<T> : Setting<T>
+        where T : struct, INumber<T>
+    {
+        /// <summary>
+        /// The lowest possible value for this setting. Defaults to 0.
+        /// </summary>
+        public T Minimum { get; init; }
+
+        /// <summary>
+        /// The highest possible value for this setting. Defaults to 100.
+        /// </summary>
+        public T Maximum { get; init; } = T.Parse("100", null);
+
+        public override T Value
+        {
+            get => base.Value;
+            set => base.Value = T.Clamp(value, Minimum, Maximum);
+        }
+    }
+
+    public class FloatSetting : NumberSetting<float>;
 
     /// <summary>
     /// Contains serveral <see cref="Setting{T}"/> instances.
     /// </summary>
     public static class Settings
     {
+        /// <inheritdoc cref="User.MusicVolume"/>
         public static readonly FloatSetting MusicVolume =
             new()
             {
                 Name = "Music Volume (%)",
                 DefaultValue = 0.5f,
+
                 Getter = u => u.MusicVolume * 100,
-                Setter = (u, v) => u.MusicVolume = v / 100,
+                Setter = (u, v) =>
+                {
+                    u.MusicVolume = v / 100;
+                    AudioPlaybackEngine.Instance.MusicVolume = v / 100;
+                },
             };
 
+        /// <inheritdoc cref="User.SoundVolume"/>
         public static readonly FloatSetting SoundVolume =
             new()
             {
                 Name = "Sound Effect Volume (%)",
                 DefaultValue = 0.5f,
+
                 Getter = u => u.SoundVolume * 100,
-                Setter = (u, v) => u.SoundVolume = v / 100,
+                Setter = (u, v) =>
+                {
+                    u.SoundVolume = v / 100;
+                    AudioPlaybackEngine.Instance.SoundVolume = v / 100;
+                },
             };
     }
 }

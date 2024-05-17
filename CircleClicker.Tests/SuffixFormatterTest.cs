@@ -1,5 +1,5 @@
-using System.Globalization;
 using CircleClicker.Utils.Converters;
+using System.Globalization;
 using Xunit.Abstractions;
 
 namespace CircleClicker.Tests

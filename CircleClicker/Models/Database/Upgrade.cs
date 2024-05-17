@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using CircleClicker.Utils;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 

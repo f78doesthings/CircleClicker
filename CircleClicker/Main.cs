@@ -25,7 +25,7 @@ namespace CircleClicker
         /// <summary>
         /// The maximum number of ticks to run for offline production.
         /// </summary>
-        public const int MaxOfflineTicks = 1000;
+        public const int MaxOfflineTicks = 10000;
 
         /// <summary>
         /// The minimum number of circles needed to perform a reincarnation.
@@ -264,7 +264,7 @@ namespace CircleClicker
         public void LoadSampleData(bool deleteExistingData = false)
         {
             bool? prevState = IsAutosavingEnabled;
-            IsAutosavingEnabled = null;
+            IsAutosavingEnabled = false;
             int buildingIndex = 0;
             int upgradeIndex = 0;
 
@@ -358,10 +358,10 @@ namespace CircleClicker
                     Name = "Enhanced Cursor",
                     Requires = ReadOnlyDependency.ManualCircles,
                     BaseRequirement = 50,
-                    RequirementScaling = 3,
+                    RequirementScaling = 2.96,
                     Currency = Currency.Circles,
                     BaseCost = 75,
-                    CostScaling = 3,
+                    CostScaling = 2.95,
                     Affects = Stat.CirclesPerClick,
                     BaseEffect = 2,
                 }
@@ -370,9 +370,9 @@ namespace CircleClicker
                 new Upgrade()
                 {
                     Name = "Factory Piping",
-                    Requires = ReadOnlyDependency.Clicks,
+                    Requires = ReadOnlyDependency.LifetimeClicks,
                     BaseRequirement = 100,
-                    RequirementScaling = 2.5,
+                    RequirementScaling = 2.75,
                     Currency = Currency.Circles,
                     BaseCost = 250,
                     CostScaling = 100,
@@ -390,7 +390,7 @@ namespace CircleClicker
                     BaseCost = ReincarnationCost * 200,
                     CostScaling = 200,
                     Affects = Stat.Squares,
-                    BaseEffect = 2,
+                    BaseEffect = 1.4,
                 }
             );
             #endregion
@@ -399,12 +399,13 @@ namespace CircleClicker
             AddPurchase(
                 new Upgrade()
                 {
-                    Name = "Triangle Hunter",
+                    Name = "Triangle Detector",
                     Requires = ReadOnlyDependency.TotalTriangles,
                     BaseRequirement = 1,
                     Currency = Currency.Triangles,
                     BaseCost = 1,
                     CostScaling = 1.5,
+                    MaxAmount = 30,
                     Affects = Stat.TriangleChance,
                     BaseEffect = 0.1,
                 }
@@ -426,11 +427,11 @@ namespace CircleClicker
                 new Upgrade()
                 {
                     Name = "Triangle Factories",
-                    Requires = ReadOnlyDependency.TriangleClicks,
-                    BaseRequirement = 15,
+                    Requires = ReadOnlyDependency.TotalTriangles,
+                    BaseRequirement = Math.Pow(6, 2),
                     Currency = Currency.Triangles,
                     BaseCost = 5,
-                    CostScaling = 3.6,
+                    CostScaling = 4,
                     Affects = Stat.Production,
                     BaseEffect = 1.25,
                 }
@@ -439,13 +440,13 @@ namespace CircleClicker
                 new Upgrade()
                 {
                     Name = "Triangle Cursor",
-                    Requires = ReadOnlyDependency.TriangleClicks,
-                    BaseRequirement = 75,
+                    Requires = ReadOnlyDependency.TotalTriangles,
+                    BaseRequirement = Math.Pow(7, 3),
                     Currency = Currency.Triangles,
                     BaseCost = 100,
-                    CostScaling = 7,
+                    CostScaling = 6,
                     Affects = Stat.CirclesPerClick,
-                    BaseEffect = Math.Pow(1.25, 2),
+                    BaseEffect = 1.625,
                 }
             );
             AddPurchase(
@@ -455,10 +456,10 @@ namespace CircleClicker
                     Requires = ReadOnlyDependency.LifetimeCircles,
                     BaseRequirement = ReincarnationCost,
                     Currency = Currency.Triangles,
-                    BaseCost = 100_000,
-                    CostScaling = 10,
+                    BaseCost = 15_000,
+                    CostScaling = 15,
                     Affects = Stat.Squares,
-                    BaseEffect = 1.5,
+                    BaseEffect = 1.4,
                 }
             );
             #endregion
@@ -469,8 +470,8 @@ namespace CircleClicker
                 {
                     Name = "Reincarnated Factories",
                     Currency = Currency.Squares,
-                    BaseCost = Math.Pow(1.5, 0),
-                    CostScaling = 3,
+                    BaseCost = 0.5,
+                    CostScaling = 4,
                     Affects = Stat.Production,
                     BaseEffect = 2,
                 }
@@ -480,10 +481,10 @@ namespace CircleClicker
                 {
                     Name = "Reincarnated Triangles",
                     Currency = Currency.Squares,
-                    BaseCost = Math.Pow(1.5, 1),
-                    CostScaling = 5,
+                    BaseCost = 0.75,
+                    CostScaling = 6,
                     Affects = Stat.TrianglesPerClick,
-                    BaseEffect = 2,
+                    BaseEffect = 1.75,
                 }
             );
             AddPurchase(
@@ -491,21 +492,22 @@ namespace CircleClicker
                 {
                     Name = "Reincarnated Cursor",
                     Currency = Currency.Squares,
-                    BaseCost = Math.Pow(1.5, 2),
-                    CostScaling = 4,
+                    BaseCost = 1,
+                    CostScaling = 5,
                     Affects = Stat.CirclesPerClick,
-                    BaseEffect = 2,
+                    BaseEffect = 2.25,
                 }
             );
             AddPurchase(
                 new Upgrade()
                 {
-                    Name = "Reincarnated Workers",
+                    Name = "Reincarnated Triangle Detector",
                     Currency = Currency.Squares,
-                    BaseCost = Math.Pow(1.5, 3),
-                    CostScaling = 7,
-                    Affects = Stat.OfflineProduction,
-                    BaseEffect = 5,
+                    BaseCost = 1.25,
+                    CostScaling = 8,
+                    MaxAmount = 5,
+                    Affects = Stat.TriangleChance,
+                    BaseEffect = 0.3,
                 }
             );
             AddPurchase(
@@ -513,10 +515,22 @@ namespace CircleClicker
                 {
                     Name = "Reincarnated Beds",
                     Currency = Currency.Squares,
-                    BaseCost = Math.Pow(1.5, 4),
+                    BaseCost = 5,
                     CostScaling = 9,
                     Affects = Stat.MaxOfflineTime,
                     BaseEffect = 1,
+                }
+            );
+            AddPurchase(
+                new Upgrade()
+                {
+                    Name = "Reincarnated Workers",
+                    Currency = Currency.Squares,
+                    BaseCost = 6,
+                    CostScaling = 10,
+                    MaxAmount = 5,
+                    Affects = Stat.OfflineProduction,
+                    BaseEffect = 4,
                 }
             );
             #endregion

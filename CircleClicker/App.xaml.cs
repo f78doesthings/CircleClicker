@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
+﻿using CircleClicker.Models;
+using CircleClicker.Models.Database;
+using CircleClicker.UI.Windows;
+using CircleClicker.Utils.Audio;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
-using CircleClicker.Models;
-using CircleClicker.Models.Database;
-using CircleClicker.UI.Windows;
-using CircleClicker.Utils.Audio;
 
 namespace CircleClicker
 {
@@ -44,18 +44,29 @@ namespace CircleClicker
             MessageBoxEx progressBox =
                 new()
                 {
-                    Message = "Connecting...",
+                    Message = "Loading...",
                     Progress = -1,
                     ShowLogo = true
                 };
             progressBox.Show();
 
             Mouse.OverrideCursor = Cursors.Wait;
-            CultureInfo.DefaultThreadCurrentUICulture = Culture;
+
+            // Preload sounds and initialize static fields
+            foreach (Stat instance in Stat.Instances)
+            {
+                instance.Register();
+            }
+            _ = ReadOnlyDependency.Clicks;
+            _ = Currency.Instances;
+            _ = AudioPlaybackEngine.Instance;
+            _ = Sounds.Collect;
 
             Window? startWindow = null;
             bool shouldConnect = true;
             Exception? connectException = null;
+
+            progressBox.Message = "Connecting...";
 #if DEBUG
             // Check if MySQL is running locally
             try
@@ -83,11 +94,13 @@ namespace CircleClicker
                     {
                         MessageBoxResult result = MessageBoxEx.Show(
                             progressBox,
-                            "Circle Clicker has successfully created a database for you.\n"
-                                + "Would you like to add the default buildings and upgrades to this database?\n"
-                                + "\n"
-                                + "If you're unsure, click <Bold>Yes</Bold>.\n"
-                                + "<Span FontSize=\"10\">You can always import the default purchases at any time from the Admin Panel.</Span>",
+                            """
+                            Circle Clicker has successfully created a database for you.
+                            Would you like to add the default buildings and upgrades to this database?
+
+                            If you're unsure, click <b>Yes</b>.
+                            <i size="10">You can always import the default purchases at any time from the Admin Panel.</i>
+                            """,
                             MessageBoxButton.YesNo,
                             MessageBoxImage.Question
                         );
@@ -116,12 +129,14 @@ namespace CircleClicker
             {
                 MessageBoxResult result = MessageBoxEx.Show(
                     progressBox,
-                    "An error occured while trying to communicate with the MySQL database.\n"
-                        + "You may still play the game in offline mode, but your progress won't be saved.\n"
-                        + "For more info on saving, click <Hyperlink NavigateUri=\"https://github.com/f78doesthings/CircleClicker#saving\">here</Hyperlink>.\n"
-                        + "\n"
-                        + "Click <Bold>Yes</Bold> to launch the game in offline mode, with the default data.\n"
-                        + "Click <Bold>No</Bold> to launch with no default data.",
+                    """
+                    An error occured while trying to communicate with the MySQL database.
+                    You may still play the game in offline mode, but your progress won't be saved.
+                    For more info on saving, click <a href="https://github.com/f78doesthings/CircleClicker#saving">here</a>.
+                        
+                    Click <b>Yes</b> to launch the game in offline mode, with the default data.
+                    Click <b>No</b> to launch with no default data.
+                    """,
                     MessageBoxButton.YesNoCancel,
                     MessageBoxImage.Error,
                     connectException
@@ -153,14 +168,6 @@ namespace CircleClicker
                 Main_.Upgrades ??= Main_.DB.Upgrades.Local.ToObservableCollection();
                 Main_.Variables ??= Main_.DB.Variables.Local.ToObservableCollection();
             }
-
-            // Preload sounds and initialize static fields
-            progressBox.Message = "Loading...";
-            _ = Stat.Instances;
-            _ = ReadOnlyDependency.Clicks;
-            _ = Currency.Instances;
-            _ = AudioPlaybackEngine.Instance;
-            _ = Sounds.Collect;
 
 #if false
             if (Main_.IsDBAvailable)

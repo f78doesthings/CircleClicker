@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:CircleClicker"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="26"
+    d:DesignHeight="34"
     d:DesignWidth="200"
     mc:Ignorable="d">
     <DockPanel>

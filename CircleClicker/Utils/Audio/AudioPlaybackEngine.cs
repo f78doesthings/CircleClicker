@@ -36,17 +36,30 @@ namespace CircleClicker.Utils.Audio
             }
         }
 
+        private float _musicVolume = 0.5f;
+
         /// <summary>
         /// The volume of the music.
         /// </summary>
         public float MusicVolume
         {
-            get => MusicPlayer?.Volume ?? 0.5f;
+            get => _musicVolume;
             set
             {
+                _musicVolume = value;
+
                 if (MusicPlayer != null)
                 {
                     MusicPlayer.Volume = value;
+
+                    if (value > 0)
+                    {
+                        PlayMusic();
+                    }
+                    else
+                    {
+                        PauseMusic();
+                    }
                 }
             }
         }
@@ -60,6 +73,7 @@ namespace CircleClicker.Utils.Audio
         {
             _output = new WasapiOut(AudioClientShareMode.Shared, 100);
             _mixer = new MixingSampleProvider(TargetWaveFormat) { ReadFully = true };
+
             _output.Init(_mixer);
             _output.Play();
         }
@@ -78,12 +92,15 @@ namespace CircleClicker.Utils.Audio
             double variation = 0
         )
         {
+            if (SoundVolume <= 0)
+            {
+                return;
+            }
+
+            rate *= (1 + Random.Shared.NextDouble() * variation * 2 - variation);
+
             CachedSoundProvider input = new(sound);
-            SoundTouchWaveProvider processor =
-                new(input)
-                {
-                    Rate = rate * (1 + Random.Shared.NextDouble() * variation * 2 - variation),
-                };
+            SoundTouchWaveProvider processor = new(input) { Rate = rate };
             VolumeSampleProvider volumeProvider =
                 new(processor.ToSampleProvider()) { Volume = SoundVolume * volume };
 
@@ -96,7 +113,16 @@ namespace CircleClicker.Utils.Audio
         public void PlayMusic()
         {
             MusicPlayer ??= new("Resources/Music/") { Volume = MusicVolume };
-            _mixer.AddMixerInput(MusicPlayer);
+
+            if (MusicVolume <= 0)
+            {
+                return;
+            }
+
+            if (!_mixer.MixerInputs.Any(v => v == MusicPlayer))
+            {
+                _mixer.AddMixerInput(MusicPlayer);
+            }
         }
 
         /// <summary>
@@ -104,7 +130,10 @@ namespace CircleClicker.Utils.Audio
         /// </summary>
         public void PauseMusic()
         {
-            _mixer.RemoveMixerInput(MusicPlayer);
+            if (MusicPlayer != null)
+            {
+                _mixer.RemoveMixerInput(MusicPlayer);
+            }
         }
 
         public void Dispose()

@@ -9,7 +9,7 @@
     xmlns:db="clr-namespace:CircleClicker.Models.Database"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:CircleClicker.Models"
-    xmlns:sys="clr-namespace:System;assembly=netstandard"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:windows="clr-namespace:CircleClicker.UI.Windows"
     Title="Circle Clicker"
     Width="1280"
@@ -20,6 +20,7 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
 
+    <!--  BUG: Resources are suddenly completely broken, but only in the designer  -->
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -98,10 +99,7 @@
                                     <RowDefinition />
                                 </Grid.RowDefinitions>
 
-                                <TextBlock
-                                    FontSize="18"
-                                    FontWeight="Bold"
-                                    Text="{Binding Name}" />
+                                <TextBlock Style="{StaticResource SubtitleStyle}" Text="{Binding Name}" />
                                 <TextBlock
                                     Grid.Column="1"
                                     HorizontalAlignment="Right"
@@ -149,10 +147,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>-->
 
-                                <TextBlock
-                                    FontSize="18"
-                                    FontWeight="Bold"
-                                    Text="{Binding Name}" />
+                                <TextBlock Style="{StaticResource SubtitleStyle}" Text="{Binding Name}" />
                                 <TextBlock
                                     Grid.Column="1"
                                     HorizontalAlignment="Right"
@@ -183,14 +178,14 @@
                                     HorizontalAlignment="Right"
                                     Click="btn_removeUpgrade_Click"
                                     IsEnabled="{Binding IsPurchased}"
-                                    Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type windows:MainWindow}}}">
+                                    Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType=windows:MainWindow}}">
                                     -1
                                 </Button>
                             </Grid>
                         </Border>
                     </DataTemplate>
 
-                    <DataTemplate x:Key="FloatSettingTemplate" DataType="models:ISetting">
+                    <DataTemplate x:Key="FloatSettingTemplate" DataType="models:FloatSetting">
                         <Grid Margin="0,3,0,7">
                             <Label
                                 Padding="0"
@@ -199,6 +194,8 @@
                             <controls:FloatEntryControl
                                 MinWidth="100"
                                 HorizontalAlignment="Right"
+                                Maximum="{Binding Maximum}"
+                                Minimum="{Binding Minimum}"
                                 Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </Grid>
                     </DataTemplate>
@@ -234,9 +231,9 @@
             HorizontalAlignment="Center"
             Orientation="Horizontal">
             <d:WrapPanel.Children>
-                <controls:CurrencyDisplay />
-                <controls:CurrencyDisplay />
-                <controls:CurrencyDisplay />
+                <controls:CurrencyDisplay DataContext="{x:Static models:Currency.Circles}" />
+                <controls:CurrencyDisplay DataContext="{x:Static models:Currency.Triangles}" Visibility="Visible" />
+                <controls:CurrencyDisplay DataContext="{x:Static models:Currency.Squares}" Visibility="Visible" />
             </d:WrapPanel.Children>
         </WrapPanel>
 
@@ -327,7 +324,6 @@
         <!--#endregion-->
 
         <!--#region Buttons-->
-
         <Button
             Name="btn_clicker"
             Grid.Row="1"
@@ -341,10 +337,6 @@
             PreviewMouseLeftButtonDown="btn_clicker_PreviewMouseLeftButtonDown"
             PreviewMouseLeftButtonUp="btn_clicker_PreviewMouseLeftButtonUp"
             RenderTransformOrigin="0.5, 0.5">
-            <Button.RenderTransform>
-                <ScaleTransform />
-            </Button.RenderTransform>
-            Click me to get circles!
             <Button.Resources>
                 <Style
                     BasedOn="{StaticResource {x:Type Button}}"
@@ -447,6 +439,11 @@
                     </Style.Triggers>
                 </Style>
             </Button.Resources>
+
+            <Button.RenderTransform>
+                <ScaleTransform />
+            </Button.RenderTransform>
+            Click me to get circles!
         </Button>
 
         <StackPanel
@@ -541,8 +538,8 @@
                 Header="Show Stats &amp; Settings">
                 <ScrollViewer Padding="0,0,10,0" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock FontSize="18" FontWeight="Bold">Stats</TextBlock>
-                        <ItemsControl Grid.Row="1" ItemsSource="{x:Static models:ReadOnlyDependency.Instances}">
+                        <TextBlock Style="{StaticResource SubtitleStyle}">Stats</TextBlock>
+                        <ItemsControl ItemsSource="{x:Static models:ReadOnlyDependency.Instances}">
                             <d:ItemsControl.ItemsSource>
                                 <x:Array Type="models:ReadOnlyDependency">
                                     <models:ReadOnlyDependency Name="Circles earned (this incarnation)" />
@@ -558,14 +555,22 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock
-                            Grid.Column="1"
-                            Margin="0,10,0,0"
-                            FontSize="18"
-                            FontWeight="Bold">
+                        <TextBlock Margin="0,10,0,0" Style="{StaticResource SubtitleStyle}">Multipliers</TextBlock>
+                        <ItemsControl ItemsSource="{x:Static models:Stat.Instances}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:Stat">
+                                    <TextBlock>
+                                        <Run Foreground="{StaticResource DimForegroundBrush}" Text="{Binding Name, Mode=OneWay, StringFormat=\{0\}:}" />
+                                        <Run Text="{Binding DefaultValue, Mode=OneWay, Converter={StaticResource SuffixFormatter}, FallbackValue=0.00}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Margin="0,10,0,0" Style="{StaticResource SubtitleStyle}">
                             Settings
                         </TextBlock>
-                        <TextBlock Foreground="{StaticResource DimForegroundBrush}" Text="{Binding MusicPlayer.CurrentFile, Source={x:Static audio:AudioPlaybackEngine.Instance}, UpdateSourceTrigger=PropertyChanged, StringFormat=♫ Currently playing: {0}, FallbackValue=Music playback is disabled. The Resources/Music folder may be missing.}" />
+                        <TextBlock Foreground="{StaticResource DimForegroundBrush}" Text="{Binding MusicPlayer.CurrentFile, UpdateSourceTrigger=PropertyChanged, StringFormat=♫ Currently playing: {0}, FallbackValue=Music playback is disabled. The Resources/Music folder may be missing.}" />
 
                         <ItemsControl
                             Grid.Row="1"

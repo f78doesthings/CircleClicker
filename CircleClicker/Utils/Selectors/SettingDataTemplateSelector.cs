@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CircleClicker.Models;
 using System.Windows;
 using System.Windows.Controls;
-using CircleClicker.Models;
 
 namespace CircleClicker.Utils.Selectors
 {
@@ -17,8 +12,7 @@ namespace CircleClicker.Utils.Selectors
             {
                 return item switch
                 {
-                    Setting<float>
-                        => element.TryFindResource("FloatSettingTemplate") as DataTemplate,
+                    FloatSetting => element.TryFindResource("FloatSettingTemplate") as DataTemplate,
                     _ => null,
                 };
             }

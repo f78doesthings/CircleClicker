@@ -7,7 +7,7 @@ using System.Windows.Controls;
 namespace CircleClicker.UI.Controls
 {
     /// <summary>
-    /// Interaction logic for NumericEntryControl.xaml
+    /// The base class for number boxes.
     /// </summary>
     public abstract partial class NumericEntryControl : UserControl, INotifyPropertyChanged
     {
@@ -42,7 +42,10 @@ namespace CircleClicker.UI.Controls
         #endregion
     }
 
-    public class NumericEntryControl<T> : NumericEntryControl
+    /// <summary>
+    /// The generic base class for number boxes.
+    /// </summary>
+    public abstract class NumericEntryControl<T> : NumericEntryControl
         where T : struct, INumber<T>
     {
         #region Dependency properties
@@ -50,14 +53,14 @@ namespace CircleClicker.UI.Controls
             nameof(Value),
             typeof(T),
             typeof(NumericEntryControl<T>),
-            new PropertyMetadata(T.Parse("0", null))
+            new PropertyMetadata(T.Zero)
         );
 
         public static readonly DependencyProperty MinimumProperty = DependencyProperty.Register(
             nameof(Minimum),
             typeof(T),
             typeof(NumericEntryControl<T>),
-            new PropertyMetadata(T.Parse("0", null))
+            new PropertyMetadata(T.Zero)
         );
 
         public static readonly DependencyProperty MaximumProperty = DependencyProperty.Register(
@@ -75,6 +78,7 @@ namespace CircleClicker.UI.Controls
             set
             {
                 SetValue(ValueProperty, T.Clamp(value, Minimum, Maximum));
+                tb.Text = value.ToString(null, App.Culture);
                 NotifyPropertyChanged();
             }
         }
@@ -98,6 +102,7 @@ namespace CircleClicker.UI.Controls
                 NotifyPropertyChanged();
             }
         }
+        #endregion
 
         protected override void tb_GotFocus(object sender, RoutedEventArgs e)
         {
@@ -108,13 +113,20 @@ namespace CircleClicker.UI.Controls
         {
             Value = T.TryParse(tb.Text, App.Culture, out T newValue) ? newValue : _previousValue;
         }
-
-        #endregion
     }
 
+    /// <summary>
+    /// A number box that works with <see cref="int"/>s.
+    /// </summary>
     public class IntEntryControl : NumericEntryControl<int>;
 
+    /// <summary>
+    /// A number box that works with <see cref="float"/>s.
+    /// </summary>
     public class FloatEntryControl : NumericEntryControl<float>;
 
+    /// <summary>
+    /// A number box that works with <see cref="double"/>s.
+    /// </summary>
     public class DoubleEntryControl : NumericEntryControl<double>;
 }

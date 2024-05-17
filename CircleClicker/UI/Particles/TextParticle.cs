@@ -11,8 +11,7 @@ namespace CircleClicker.UI.Particles
         public TextParticle(Canvas canvas, string text, Point position = default)
             : base(canvas, new TextBlock() { Text = text }, position)
         {
-            Random rng = new();
-            Velocity = new Vector((rng.NextDouble() * 160) - 80, -200);
+            Velocity = new Vector((Random.Shared.NextDouble() * 160) - 80, -200);
             MaxLifetime = 1;
         }
 

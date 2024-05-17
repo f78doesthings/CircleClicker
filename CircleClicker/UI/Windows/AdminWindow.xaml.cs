@@ -1,13 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using CircleClicker.Models;
+using CircleClicker.Models.Database;
+using CircleClicker.UI.Controls;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Markup;
-using CircleClicker.Models;
-using CircleClicker.Models.Database;
-using CircleClicker.UI.Controls;
 
 namespace CircleClicker.UI.Windows
 {
@@ -234,9 +233,11 @@ namespace CircleClicker.UI.Windows
         {
             MessageBoxResult result = MessageBoxEx.Show(
                 this,
-                "Are you sure you want to load the default buildings and upgrades? This may impact save data.\n"
-                    + "Click <Bold>Yes</Bold> to update the existing purchases with the default data.\n"
-                    + "Click <Bold>No</Bold> to first delete any existing purchases. This will also remove all owned purchases from saves.",
+                """
+                Are you sure you want to load the default buildings and upgrades? This may impact save data.
+                Click <b>Yes</b> to update the existing purchases with the default data.
+                Click <b>No</b> to first delete any existing purchases. <font weight="500">This will remove all owned purchases from saves.</font>
+                """,
                 MessageBoxButton.YesNoCancel,
                 MessageBoxImage.Question
             );

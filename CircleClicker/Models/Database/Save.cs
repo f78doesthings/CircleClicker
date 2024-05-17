@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CircleClicker.Utils;
+﻿using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 

@@ -1,7 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Media;
-using CircleClicker.Models.Database;
+﻿using CircleClicker.Models.Database;
 using CircleClicker.Utils;
+using System.Windows;
+using System.Windows.Media;
 
 namespace CircleClicker.Models
 {
@@ -264,7 +264,7 @@ namespace CircleClicker.Models
     /// <summary>
     /// A game currency that can be displayed with <see cref="UI.Controls.CurrencyDisplay"/>.
     /// </summary>
-    public class Currency : Dependency, IDependency
+    public class Currency : Dependency
     {
         #region Instances
         public static new readonly List<Currency> Instances = [];

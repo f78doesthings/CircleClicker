@@ -1,9 +1,10 @@
 ﻿using CircleClicker.Models.Database;
 using CircleClicker.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CircleClicker.Models
 {
-    // TODO: look into caching stat values to speed up offline production calculation
+    // TODO: Look into caching stat values to speed up offline production calculation
 
     /// <summary>
     /// The base interface for something that can be boosted by <see cref="Upgrade"/>s.
@@ -19,6 +20,11 @@ namespace CircleClicker.Models
         /// The internal ID of the stat.
         /// </summary>
         public string StatId { get; }
+
+        /// <summary>
+        /// The display name of the stat.
+        /// </summary>
+        public string Name { get; }
 
         /// <summary>
         /// The description for upgrades that affect this stat.<br />
@@ -44,9 +50,9 @@ namespace CircleClicker.Models
         /// <summary>
         /// The default implementation of <see cref="Value"/>.
         /// </summary>
-        protected static double DefaultValue(IStat stat)
+        protected static double DefaultValue(IStat stat, double? overrideBaseValue = null)
         {
-            double value = stat.BaseValue;
+            double value = overrideBaseValue ?? stat.BaseValue;
             if (Main.Instance.CurrentSave != null)
             {
                 foreach (Upgrade upgrade in Main.Instance.Upgrades)
@@ -83,100 +89,131 @@ namespace CircleClicker.Models
         /// On this stat, the returned <see cref="Value"/> is divided by 100.
         /// </summary>
         public static readonly Stat ProductionToCPC =
-            new(
-                nameof(ProductionToCPC),
-                "Clicking grants +{0}% of your circles per second.",
-                isAdditive: true,
-                customFormula: v => v / 100
-            );
+            new()
+            {
+                StatId = nameof(ProductionToCPC),
+                Name = "% of circles per second gained per click",
+                Description = "Clicking grants +{0}% of your circles per second.",
+                IsAdditive = true,
+                CustomFormula = v => v / 100
+            };
 
         /// <summary>
         /// The base number of circles gained per click.<br />
         /// On this stat, <see cref="Value"/> returns the total number of circles per click.
         /// </summary>
         public static readonly Stat CirclesPerClick =
-            new(
-                nameof(CirclesPerClick),
-                "Gain x{0} base circles from clicking.",
-                customFormula: v => v + Currency.Circles.Production * ProductionToCPC.Value
-            );
+            new()
+            {
+                StatId = nameof(CirclesPerClick),
+                Name = "Base circles per click",
+                Description = "Gain x{0} base circles from clicking.",
+                CustomFormula = v => v + Currency.Circles.Production * ProductionToCPC.Value
+            };
 
         /// <summary>
         /// The multiplier to the production of all buildings.
         /// </summary>
         public static readonly Stat Production =
-            new(nameof(Production), "Increases all building production by x{0}.");
+            new()
+            {
+                StatId = nameof(Production),
+                Name = "Building production multiplier",
+                Description = "Increases all building production by x{0}."
+            };
 
         /// <summary>
         /// The multiplier to triangle gain.
         /// </summary>
         public static readonly Stat TrianglesPerClick =
-            new(
-                nameof(TrianglesPerClick),
-                "Increases the triangles you earn from clicking by x{0}."
-            );
+            new()
+            {
+                StatId = nameof(TrianglesPerClick),
+                Name = "Triangle multiplier",
+                Description = "Increases the triangles you earn from clicking by x{0}."
+            };
 
         /// <summary>
         /// The chance to earn triangles from clicking the big button.<br />
         /// On this stat, the returned <see cref="Value"/> is divided by 100.
         /// </summary>
         public static readonly Stat TriangleChance =
-            new(
-                nameof(TriangleChance),
-                "Increases the chance to earn triangles from clicking by +{0}%.",
-                0.5,
-                true,
-                v => v / 100
-            );
+            new()
+            {
+                StatId = nameof(TriangleChance),
+                Name = "% chance to earn triangles per click",
+                Description = "Increases the chance to earn triangles from clicking by +{0}%.",
+                DefaultBaseValue = 0.5,
+                IsAdditive = true,
+                CustomFormula = v => v / 100
+            };
 
         /// <summary>
         /// The multiplier to square gain.
         /// </summary>
         public static readonly Stat Squares =
-            new(nameof(Squares), "Increases the squares you earn from reincarnating by x{0}.");
+            new()
+            {
+                StatId = nameof(Squares),
+                Name = "Square multiplier",
+                Description = "Increases the squares you earn from reincarnating by x{0}.",
+            };
 
         /// <summary>
         /// The multiplier to the <b>offline</b> production of all buildings.<br />
         /// On this stat, the returned <see cref="Value"/> is divided by 100.
         /// </summary>
         public static readonly Stat OfflineProduction =
-            new(
-                nameof(OfflineProduction),
-                "Gain +{0}% of your circles per second while offline.",
-                10,
-                true,
-                v => v / 100
-            );
+            new()
+            {
+                StatId = nameof(OfflineProduction),
+                Name = "% of circles per second gained while offline",
+                Description = "Gain +{0}% of your circles per second while offline.",
+                DefaultBaseValue = 10,
+                IsAdditive = true,
+                CustomFormula = v => v / 100
+            };
 
         /// <summary>
         /// The maximum duration for offline building production, in hours.
         /// </summary>
         public static readonly Stat MaxOfflineTime =
-            new(
-                nameof(MaxOfflineTime),
-                "Increases how long you can produce circles while offline by {0} hour(s).",
-                3,
-                true
-            );
+            new()
+            {
+                StatId = nameof(MaxOfflineTime),
+                Name = "Maximum offline time (in hours)",
+                Description = "Increases how long you can produce circles while offline by {0} hour(s).",
+                DefaultBaseValue = 3,
+                IsAdditive = true,
+            };
 
         #endregion
 
         #region Model
-        public string StatId { get; }
+        public required string StatId { get; init; }
 
-        public string Description { get; }
+        public string Name { get; private set; } = null!; // Set in Stat.Register
 
-        public VariableReference BaseValue { get; }
+        public string Description { get; private set; } = null!; // Set in Stat.Register
 
-        public bool IsAdditive { get; }
+        /// <summary>
+        /// The base value of the stat.
+        /// </summary>
+        public VariableReference BaseValue { get; private set; } = null!; // Set in Stat.Register
+
+        public bool IsAdditive { get; init; }
 
         /// <summary>
         /// Takes the default value of the stat and returns the actual value.
         /// </summary>
-        private readonly Func<double, double>? _customFormula;
+        private Func<double, double>? CustomFormula { get; init; }
+
+        private double? DefaultBaseValue { get; init; }
         #endregion
 
         #region Implementation
+        public double DefaultValue => IStat.DefaultValue(this);
+
         /// <summary>
         /// The current value for this stat.
         /// </summary>
@@ -185,29 +222,23 @@ namespace CircleClicker.Models
             get
             {
                 double value = IStat.DefaultValue(this);
-                return _customFormula != null ? _customFormula(value) : value;
+                return CustomFormula != null ? CustomFormula(value) : value;
             }
         }
 
         double IStat.BaseValue => BaseValue.Value;
 
-        public Stat(
-            string id = null!,
-            string? statText = null,
-            double? baseValue = null,
-            bool isAdditive = false,
-            Func<double, double>? customFormula = null
-        )
+        public Stat()
         {
-            StatId = id;
-            Description = statText ?? id;
-            BaseValue = new($"Stat.{StatId}.BaseValue", baseValue ?? (isAdditive ? 0 : 1));
-            IsAdditive = isAdditive;
-            _customFormula = customFormula;
-
             IStat.Instances.Add(this);
             Instances.Add(this);
-            _ = BaseValue;
+        }
+
+        internal void Register()
+        {
+            Name ??= StatId;
+            Description ??= StatId;
+            BaseValue = new($"Stat.{StatId}.BaseValue", DefaultBaseValue ?? (IsAdditive ? 0 : 1));
         }
 
         public override string ToString()

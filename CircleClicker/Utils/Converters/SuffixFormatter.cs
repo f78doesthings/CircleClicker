@@ -8,16 +8,13 @@ namespace CircleClicker.Utils.Converters
 {
     /// <summary>
     /// Formats numbers with short suffixes.<br />
-    /// Numbers between 1,000 and 999,999 will be formatted with the default formatter.<br />
     /// <br />
-    /// Examples:
-    /// <list type="table">
-    ///     <item>1.234 -> 1.23</item>
-    ///     <item>12.34 -> 12.3</item>
-    ///     <item>123456 -> 123,456</item>
-    ///     <item>1234567 -> 1.23 M</item>
-    ///     <item>1e100 -> 10.0 DTg</item>
-    /// </list>
+    /// Examples:<br />
+    /// 1.234 -> 1.23<br />
+    /// 12.34 -> 12.3<br />
+    /// 123456 -> 123,456<br />
+    /// 1234567 -> 1.23 M<br />
+    /// 1e100 -> 10.0 DTg
     /// </summary>
     public class SuffixFormatter : IFormatProvider, ICustomFormatter, IValueConverter
     {
@@ -84,7 +81,8 @@ namespace CircleClicker.Utils.Converters
             if (numAbs >= 1_000 && numAbs < 1_000_000)
             {
                 // Format these numbers with the default number formatter to seperate it with commas
-                return Math.Floor(number).ToString(format ?? ("N" + numDecimals), formatProvider);
+                return Math.Floor(number)
+                    .ToString(format ?? ("N" + Math.Max(numDecimals - 3, 0)), formatProvider);
             }
 
             int index = numLog10 / 3; // The index into the suffixes list

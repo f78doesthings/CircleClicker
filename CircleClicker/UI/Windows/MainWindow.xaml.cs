@@ -1,4 +1,11 @@
-﻿using System.ComponentModel;
+﻿using CircleClicker.Models;
+using CircleClicker.Models.Database;
+using CircleClicker.UI.Controls;
+using CircleClicker.UI.Particles;
+using CircleClicker.Utils.Audio;
+using CircleClicker.Utils.Converters;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -6,13 +13,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using CircleClicker.Models;
-using CircleClicker.Models.Database;
-using CircleClicker.UI.Controls;
-using CircleClicker.UI.Particles;
-using CircleClicker.Utils.Audio;
-using CircleClicker.Utils.Converters;
-using Microsoft.EntityFrameworkCore;
 
 namespace CircleClicker.UI.Windows
 {
@@ -25,8 +25,12 @@ namespace CircleClicker.UI.Windows
 #pragma warning disable CA1822 // Mark members as static
         public Main Main => Main.Instance;
 
+        public User User => Main.CurrentUser ?? throw new NullReferenceException("Main.CurrentUser is null.");
+
         public Save Save =>
             Main.CurrentSave ?? throw new NullReferenceException("Main.CurrentSave is null.");
+
+        public MusicProvider? MusicPlayer => AudioPlaybackEngine.Instance.MusicPlayer;
 
         /// <summary>
         /// Used to set the visibility of admin-only buttons, such as <see cref="btn_admin"/>.
@@ -50,8 +54,8 @@ namespace CircleClicker.UI.Windows
         public double ReincarnateProgress =>
             Currency.Squares.IsPending
                 ? 100
-                : Math.Log10((Save.TotalCircles / 10) + 1)
-                    / Math.Log10((Main.ReincarnationCost.Value / 10) + 1)
+                : Math.Log10((Save.TotalCircles / 100) + 1)
+                    / Math.Log10((Main.ReincarnationCost.Value / 100) + 1)
                     * 100;
 
         /// <summary>
@@ -183,9 +187,11 @@ namespace CircleClicker.UI.Windows
             purchasedTab.Content = purchasedItems;
             tc_upgrades.Items.Add(purchasedTab);
 
-            // Start music playback
+            // Set sound and music volume and start music playback
             try
             {
+                AudioPlaybackEngine.Instance.SoundVolume = User.SoundVolume;
+                AudioPlaybackEngine.Instance.MusicVolume = User.MusicVolume;
                 AudioPlaybackEngine.Instance.PlayMusic();
             }
             catch (Exception ex)
@@ -277,7 +283,11 @@ namespace CircleClicker.UI.Windows
                 {
                     MessageBoxResult result = MessageBoxEx.Show(
                         this,
-                        "Something went wrong while saving your data. You may lose progress if you choose to quit now.\nAre you sure you want to quit?",
+                        """
+                        Something went wrong while saving your data. You may <b>lose progress</b> if you choose to quit now.
+
+                        Are you sure you want to quit?
+                        """,
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Error,
                         ex
@@ -363,11 +373,8 @@ namespace CircleClicker.UI.Windows
                 return;
             }
 
-            //for (int i = 0; i < upgrade.Amount; i++)
-            {
-                upgrade.Amount--;
-                upgrade.Currency!.Value += upgrade.Cost;
-            }
+            upgrade.Amount--;
+            upgrade.Currency!.Value += upgrade.Cost;
         }
 
         private void btn_reincarnate_Click(object sender, RoutedEventArgs e)

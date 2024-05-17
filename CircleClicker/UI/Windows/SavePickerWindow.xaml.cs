@@ -1,12 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using CircleClicker.Models;
+using CircleClicker.Models.Database;
+using CircleClicker.Utils;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using CircleClicker.Models;
-using CircleClicker.Models.Database;
-using CircleClicker.Utils;
 
 namespace CircleClicker.UI.Windows
 {
@@ -114,7 +114,11 @@ namespace CircleClicker.UI.Windows
 
             void Draw(object? sender, EventArgs e)
             {
-                Main.IsAutosavingEnabled = null; // Allow MainWindow to update once every frame
+                if (Main.IsAutosavingEnabled == false)
+                {
+                    Main.IsAutosavingEnabled = null; // Allow MainWindow to update once every frame
+                }
+
                 progressBox.Progress = (double)i / Main.MaxOfflineTicks * 100;
             }
 
