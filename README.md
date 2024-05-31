@@ -17,12 +17,14 @@ Circle Clicker currently uses MySQL to save user data, buildings, upgrades and g
 
 ## Tips
 
-### Creating an admin account
+### Creating an administrator account
 
-Creating a user named `admin` will automatically give it admin privileges.
-Admins have access to some extra features to aid with testing, as well as the Admin Panel, where you can edit purchases and game variables.
+Creating a user named `admin` will automatically give it administrator privileges. (If you want more administrators, you'll need to edit the database yourself.)
+
+Administrators have access to some extra features to aid with testing, as well as the Admin Panel, where you can edit things like purchases and game variables.
 
 ### Music playback
 
 Circle Clicker supports playing back your own music. Simply place the music files you want to play in `<APPDIR>/Resources/Music`, where `<APPDIR>` is the folder that contains the `CircleClicker.exe` executable.
+
 (Circle Clicker currently comes with 1 of my own songs by default. I will add more later.)

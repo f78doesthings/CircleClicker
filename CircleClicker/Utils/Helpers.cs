@@ -35,6 +35,9 @@ namespace CircleClicker.Utils
             [GeneratedRegex(@"\n\s*\n")]
             public static partial Regex DoubleNewLineRegex();
 
+            [GeneratedRegex("""res:(\w+)""")]
+            public static partial Regex StaticResourceRegex();
+
             public static string EvaluateElement(Match match)
             {
                 if (match.Groups.TryGetValue("tag", out Group? tag))
@@ -63,7 +66,7 @@ namespace CircleClicker.Utils
                         {
                             string newName = name.Value switch
                             {
-                                // Attribute replacements
+                                // Attribute name replacements
                                 "color" => nameof(TextElement.Foreground),
                                 "face" or "family" => nameof(TextElement.FontFamily),
                                 "size" => nameof(TextElement.FontSize),
@@ -73,7 +76,8 @@ namespace CircleClicker.Utils
                                 var other => other
                             };
 
-                            string newValue = value.Value;
+                            // Replaces res:... with {StaticResource ...}
+                            string newValue = StaticResourceRegex().Replace(value.Value, "{StaticResource $1}");
                             if (newName == nameof(TextElement.FontWeight))
                             {
                                 newValue = newValue switch
@@ -92,6 +96,7 @@ namespace CircleClicker.Utils
                                     var other => other
                                 };
                             }
+
                             newAttributes += $" {newName}=\"{newValue}\"";
                         }
                     }
@@ -124,8 +129,13 @@ namespace CircleClicker.Utils
         /// <returns>
         /// A collection of <see cref="Inline"/>s, or if the parsing failed, the input text.
         /// </returns>
-        public static IEnumerable<Inline> ParseInlines(string text)
+        public static IEnumerable<Inline> ParseInlines(string? text)
         {
+            if (text == "" || text == null)
+            {
+                return [];
+            }
+
             try
             {
                 text = Internal.ReplaceElements(text);

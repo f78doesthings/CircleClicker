@@ -37,6 +37,8 @@ namespace CircleClicker.UI.Windows
         /// </summary>
         public bool IsAdmin => Main.CurrentUser?.IsAdmin == true;
 
+        public int BulkBuyMinimum => IsAdmin ? -1000 : 0;
+
         /// <summary>
         /// Used to enable or disable <see cref="btn_reincarnate"/>.
         /// </summary>
@@ -89,6 +91,7 @@ namespace CircleClicker.UI.Windows
                 Main.DB.OwnedPurchases.Where(v => v.Save == Main.CurrentSave).Load();
             }
 
+            DataTemplate? purchaseTemplate = TryFindResource("PurchaseTemplate") as DataTemplate;
             foreach (Currency currency in Currency.Instances)
             {
                 CurrencyDisplay display = new() { DataContext = currency };
@@ -113,7 +116,7 @@ namespace CircleClicker.UI.Windows
                     new()
                     {
                         ItemsSource = unlockedCVS.View,
-                        ItemTemplate = TryFindResource("UpgradeTemplate") as DataTemplate
+                        ItemTemplate = purchaseTemplate
                     };
 
                 TabItem tab =
@@ -182,7 +185,7 @@ namespace CircleClicker.UI.Windows
                 new()
                 {
                     ItemsSource = purchasedCVS.View,
-                    ItemTemplate = TryFindResource("UpgradeTemplate") as DataTemplate
+                    ItemTemplate = purchaseTemplate
                 };
             purchasedTab.Content = purchasedItems;
             tc_upgrades.Items.Add(purchasedTab);
@@ -304,6 +307,9 @@ namespace CircleClicker.UI.Windows
         }
 
 #pragma warning disable IDE1006 // Naming Styles
+        /// <summary>
+        /// Called when the big circle is clicked.
+        /// </summary>
         private void btn_clicker_Click(object sender, RoutedEventArgs e)
         {
             Point mousePos = Mouse.GetPosition(cnvs);
@@ -311,6 +317,7 @@ namespace CircleClicker.UI.Windows
             Save.Circles += circlesGained;
             Save.ManualCircles += circlesGained;
             Save.Clicks++;
+            btn_clicker.Content = null;
 
             if (Main.RNG.NextDouble() < Stat.TriangleChance.Value)
             {
@@ -337,6 +344,9 @@ namespace CircleClicker.UI.Windows
             Particles.Add(particle);
         }
 
+        /// <summary>
+        /// Called when the Open Admin Panel button is clicked.
+        /// </summary>
         private void btn_admin_Click(object sender, RoutedEventArgs e)
         {
             if (IsAdmin)
@@ -346,6 +356,9 @@ namespace CircleClicker.UI.Windows
             }
         }
 
+        /// <summary>
+        /// Called when the Buy button is clicked on a purchase.
+        /// </summary>
         private void btn_buy_Click(object sender, RoutedEventArgs e)
         {
             if (
@@ -357,26 +370,14 @@ namespace CircleClicker.UI.Windows
                 return;
             }
 
+            int amount = purchase.ClampedBulkBuy;
             purchase.Currency!.Value -= purchase.Cost;
-            purchase.Amount++;
+            purchase.Amount += amount;
         }
 
-        private void btn_removeUpgrade_Click(object sender, RoutedEventArgs e)
-        {
-            if (
-                !IsAdmin
-                || sender is not Button button
-                || button.DataContext is not Upgrade upgrade
-                || !upgrade.IsPurchased
-            )
-            {
-                return;
-            }
-
-            upgrade.Amount--;
-            upgrade.Currency!.Value += upgrade.Cost;
-        }
-
+        /// <summary>
+        /// Called when the Reincarnate button is clicked.
+        /// </summary>
         private void btn_reincarnate_Click(object sender, RoutedEventArgs e)
         {
             if (!Currency.Squares.IsPending)
@@ -418,21 +419,29 @@ namespace CircleClicker.UI.Windows
                 Save.TotalCircles = 0;
                 Save.ManualCircles = 0;
                 Save.TotalTriangles = 0;
-
                 Main.IsAutosavingEnabled = true;
             }
         }
 
+        /// <summary>
+        /// Filter for the collection view source for buildings. Only shows purchases that have been unlocked.
+        /// </summary>
         private void cvs_buildings_Filter(object sender, FilterEventArgs e)
         {
-            e.Accepted = ((Building)e.Item).IsUnlocked;
+            e.Accepted = e.Item is Purchase purchase && purchase.IsUnlocked;
         }
 
+        /// <summary>
+        /// Called when the left mouse button is pressed on the big circle.
+        /// </summary>
         private void btn_clicker_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             AudioPlaybackEngine.Instance.PlaySound(Sounds.ClickOn, variation: 0.1);
         }
 
+        /// <summary>
+        /// Called when the left mouse button is released on the big circle.
+        /// </summary>
         private void btn_clicker_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             AudioPlaybackEngine.Instance.PlaySound(Sounds.ClickOff, variation: 0.1);

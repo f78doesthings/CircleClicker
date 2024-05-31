@@ -175,35 +175,116 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
         }
     }
 
-    public string? CostText => Currency?.Format(Cost);
+    public string CostText => $"Buy x{ClampedBulkBuy.ToString("N0", App.Culture)} for {Currency?.Format(Cost, "R-")}";
     #endregion
 
     #region Values for CurrentSave
     /// <summary>
+    /// The description of the purchase. Supports rich text (see <see cref="Helpers.ParseInlines"/>).
+    /// </summary>
+    public abstract string Description { get; }
+
+    /// <summary>
     /// Returns the current amount needed to unlock this purchase.
     /// </summary>
-    public double Requirement =>
-        RequirementAdditive
-            ? BaseRequirement + RequirementScaling * Amount
-            : BaseRequirement * Math.Pow(RequirementScaling, Amount);
+    public double Requirement => GetRequirement(Amount);
 
     /// <summary>
     /// Whether this purchase is currently available for purchase.
     /// </summary>
     public virtual bool IsUnlocked =>
         Currency != null
-        && (MaxAmount <= 0 || Amount < MaxAmount)
-        && (Requires == null || Requires.Value >= Requirement);
+        && (((MaxAmount <= 0 || Amount < MaxAmount)
+        && (Requires == null || Requires.Value >= Requirement)) || ClampedBulkBuy < 0);
 
     /// <summary>
     /// Whether this purchase can currently be afforded.
     /// </summary>
-    public bool CanAfford => IsUnlocked && Currency?.Value >= Cost;
+    public bool CanAfford => IsUnlocked && ((Currency?.Value >= Cost && ClampedBulkBuy != 0) || ClampedBulkBuy < 0);
+
+    /// <summary>
+    /// Clamps <see cref="User.BulkBuy"/> for this purchase.
+    /// </summary>
+    public int ClampedBulkBuy
+    {
+        get
+        {
+            int amount = GetCost(Amount, Main.Instance.CurrentUser?.BulkBuy ?? 1).amount;
+            for (int i = 0; i < amount; i++)
+            {
+                if (Requires?.Value < GetRequirement(Amount + i))
+                {
+                    return i;
+                }
+            }
+            return amount;
+        }
+    }
 
     /// <summary>
     /// The current cost of this purchase.
     /// </summary>
-    public double Cost => BaseCost * Math.Pow(CostScaling, Amount);
+    public double Cost => GetCost(Amount, ClampedBulkBuy).cost;
+
+    public double GetRequirement(int level)
+    {
+        return RequirementAdditive
+            ? BaseRequirement + RequirementScaling * level
+            : BaseRequirement * Math.Pow(RequirementScaling, level);
+    }
+
+    /// <summary>
+    /// Returns the cost of this purchase for the given level and bulk buy amount.
+    /// </summary>
+    public (double cost, int amount) GetCost(int level, int bulkAmount = 1)
+    {
+        if (bulkAmount == 1)
+        {
+            return (BaseCost * Math.Pow(CostScaling, level), 1);
+        }
+        else if (bulkAmount > 1)
+        {
+            double cost = 0;
+            int i = 0;
+            for (; i < bulkAmount && (MaxAmount <= 0 || i < level - MaxAmount); i++)
+            {
+                cost += BaseCost * Math.Pow(CostScaling, level + i);
+            }
+
+            return (cost, i);
+        }
+        else if (bulkAmount == 0)
+        {
+            double cost = 0;
+            double nextCost = BaseCost * Math.Pow(CostScaling, level);
+            int i = 0;
+
+            while (cost <= Currency?.Value)
+            {
+                cost += nextCost;
+                i++;
+
+                nextCost = BaseCost * Math.Pow(CostScaling, level + i);
+                if (cost + nextCost > Currency?.Value)
+                {
+                    break;
+                }
+            }
+
+            return (cost, i);
+        }
+        else
+        {
+            double cost = 0;
+            int i = 0;
+            for (; i < -bulkAmount && i < level; i++)
+            {
+                cost -= BaseCost * Math.Pow(CostScaling, level - i - 1);
+            }
+
+            return (cost, -i);
+        }
+    }
 
     /// <summary>
     /// The current amount of this purchase owned.
@@ -242,7 +323,8 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
                     nameof(Cost),
                     nameof(CostText),
                     nameof(IsUnlocked),
-                    nameof(CanAfford)
+                    nameof(CanAfford),
+                    nameof(Description),
                 ]
             );
         }

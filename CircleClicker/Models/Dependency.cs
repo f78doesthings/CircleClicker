@@ -1,7 +1,9 @@
 ﻿using CircleClicker.Models.Database;
 using CircleClicker.Utils;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 
 namespace CircleClicker.Models
 {
@@ -10,6 +12,7 @@ namespace CircleClicker.Models
     /// </summary>
     public interface IReadOnlyDependency
     {
+        #region Instances
         /// <summary>
         /// A list of all <see cref="IReadOnlyDependency"/> instances.
         /// </summary>
@@ -19,7 +22,9 @@ namespace CircleClicker.Models
         {
             Instances.Add(instance);
         }
+        #endregion
 
+        #region Model
         /// <summary>
         /// The internal ID of this dependency.
         /// </summary>
@@ -34,7 +39,13 @@ namespace CircleClicker.Models
         /// Gets the current value of this dependency.
         /// </summary>
         public double Value { get; }
+        #endregion
 
+        #region Implementation
+        /// <summary>
+        /// Formats a number for this dependency.<br />
+        /// If the format string starts with <c>R+</c> or <c>R-</c>, this will return text for use with <see cref="Helpers.ParseInlines"/> (if <c>R-</c>, will not include AccentBrush).
+        /// </summary>
         public string Format(
             double number,
             string? format = null,
@@ -61,6 +72,7 @@ namespace CircleClicker.Models
             }
             return text;
         }
+        #endregion
     }
 
     /// <summary>
@@ -69,6 +81,7 @@ namespace CircleClicker.Models
     /// </summary>
     public interface IDependency : IReadOnlyDependency
     {
+        #region Instances
         /// <summary>
         /// A list of all <see cref="IDependency"/> instances.
         /// </summary>
@@ -79,11 +92,14 @@ namespace CircleClicker.Models
             IReadOnlyDependency.Instances.Add(instance);
             Instances.Add(instance);
         }
+        #endregion
 
+        #region Model
         /// <summary>
         /// Gets and sets the current value of this dependency.
         /// </summary>
         public new double Value { get; set; }
+        #endregion
     }
 
     /// <summary>
@@ -231,6 +247,7 @@ namespace CircleClicker.Models
     /// </summary>
     public class Dependency : ReadOnlyDependency, IDependency
     {
+        #region Implementation
         public new double Value
         {
             get => base.Value;
@@ -259,6 +276,7 @@ namespace CircleClicker.Models
         {
             return IReadOnlyDependency.DefaultFormat(this, number, format, formatProvider);
         }
+        #endregion
     }
 
     /// <summary>
@@ -274,7 +292,7 @@ namespace CircleClicker.Models
             new()
             {
                 DependencyId = nameof(Circles),
-                Brush = Application.Current.TryFindResource("AccentBrush") as Brush,
+                BrushTemplate = "AccentBrush",
                 Name = "Circles",
                 Icon = "⚫",
 
@@ -288,11 +306,7 @@ namespace CircleClicker.Models
             new()
             {
                 DependencyId = nameof(Triangles),
-                Brush = new LinearGradientBrush(
-                    Color.FromRgb(242, 203, 12),
-                    Color.FromRgb(229, 138, 11),
-                    90
-                ),
+                BrushTemplate = "TriangleBrush",
                 Name = "Triangles",
                 Icon = "▼",
 
@@ -305,7 +319,7 @@ namespace CircleClicker.Models
             new()
             {
                 DependencyId = nameof(Squares),
-                Brush = Application.Current.TryFindResource("SquareBrush") as Brush,
+                BrushTemplate = "SquareBrush",
                 Name = "Squares",
                 Icon = "⬛",
 
@@ -362,9 +376,14 @@ namespace CircleClicker.Models
             Main.Instance.Upgrades.Count(v => v.Currency == this && v.CanAfford);
 
         /// <summary>
+        /// The template name of the currency's brush.
+        /// </summary>
+        public string? BrushTemplate { get; init; }
+
+        /// <summary>
         /// The color of the currency's icon.
         /// </summary>
-        public Brush? Brush { get; init; }
+        public Brush? Brush => Application.Current.TryFindResource(BrushTemplate) as Brush;
         #endregion
 
         #region Implementation
@@ -386,8 +405,23 @@ namespace CircleClicker.Models
             IFormatProvider? formatProvider = null
         )
         {
+            bool rich = false;
+            if (format?.Length >= 2 && format.StartsWith('R'))
+            {
+                switch (format[1])
+                {
+                    case '+':
+                        rich = BrushTemplate != null;
+                        break;
+                    case '-':
+                        rich = BrushTemplate != null && BrushTemplate != "AccentBrush";
+                        break;
+                }
+                format = format.Length > 2 ? format[2..] : null;
+            }
+
             return Icon != null
-                ? $"{Icon} {number.FormatSuffixes(format, formatProvider ?? App.Culture)}"
+                ? $"{(rich ? $"<font color=\"res:{BrushTemplate}\">{Icon}</font>" : Icon)} {number.FormatSuffixes(format, formatProvider ?? App.Culture)}"
                 : base.Format(number, format, formatProvider);
         }
         #endregion

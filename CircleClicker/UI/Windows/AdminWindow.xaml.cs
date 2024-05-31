@@ -1,6 +1,7 @@
 ﻿using CircleClicker.Models;
 using CircleClicker.Models.Database;
 using CircleClicker.UI.Controls;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -38,7 +39,7 @@ namespace CircleClicker.UI.Windows
                 {
                     DisplayMemberPath = null,
                     Header = name ?? prop,
-                    Width = 150,
+                    Width = 250,
                     ItemsSource = optional ? ["", .. items] : items,
                     SelectedItemBinding = new Binding(prop)
                 };
@@ -60,6 +61,7 @@ namespace CircleClicker.UI.Windows
             )
             {
                 // Adapted from https://www.codeproject.com/articles/444371/creating-wpf-data-templates-in-code-the-right-way
+                // TODO: just place these in AdminWindow
                 string xaml = $$"""
                         <DataTemplate>
                             <controls:{{(integer ? nameof(IntEntryControl) : nameof(DoubleEntryControl))}}
@@ -92,18 +94,23 @@ namespace CircleClicker.UI.Windows
             }
         }
 
+        #region Properties for data binding
         /// <summary>
         /// Stores the most recently used tab this session.
         /// </summary>
         private static int _lastTab;
 
 #pragma warning disable CA1822 // Mark members as static
+        /// <inheritdoc cref="_lastTab"/>
         public int CurrentTab
         {
             get => _lastTab;
             set => _lastTab = value;
         }
 #pragma warning restore CA1822 // Mark members as static
+
+        public bool IsUserSelected => dg_users.SelectedItem is User;
+        #endregion
 
         public static Main Main => Main.Instance;
 
@@ -133,9 +140,18 @@ namespace CircleClicker.UI.Windows
         public AdminWindow()
         {
             InitializeComponent();
-            Main.IsAutosavingEnabled = false;
+            Main.IsAutosavingEnabled = null;
             DataContext = this;
 
+            if (Main.IsDBAvailable)
+            {
+                Main.DB.Users.Load();
+                dg_users.ItemsSource = Main.DB.Users.Local.ToObservableCollection();
+            }
+            else
+            {
+                tab_users.Visibility = Visibility.Collapsed;
+            }
             dg_variables.ItemsSource = VariableReference.Instances;
 
             dg_buildings.ItemsSource = Main.Buildings;
@@ -161,7 +177,7 @@ namespace CircleClicker.UI.Windows
 
                 StackPanel panel = new();
                 Label label = new() { Content = prop };
-                dynamic input = integer
+                NumericEntryControl input = integer
                     ? new IntEntryControl() { Maximum = int.MaxValue }
                     : new DoubleEntryControl() { Maximum = double.MaxValue };
                 input.DataContext = Main.CurrentSave;
@@ -269,6 +285,36 @@ namespace CircleClicker.UI.Windows
                 (MessageBoxImage)cbx_test_msgBoxIcon.SelectedValue
             );
             tb_test_msgBoxResult.Text = result.ToString();
+        }
+
+        private void btn_createUser_Click(object sender, RoutedEventArgs e)
+        {
+            User? user = User.CreateUser(tbx_username.Text, pwdbx.Password, out string errorMessage);
+            if (user == null)
+            {
+                MessageBoxEx.Show(errorMessage, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
+
+        private void btn_updateUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (dg_users.SelectedItem is not User user)
+            {
+                return;
+            }
+
+            MessageBoxEx.Show("Not implemented", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void btn_banUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (dg_users.SelectedItem is not User user)
+            {
+                return;
+            }
+
+            MessageBoxEx.Show("Not implemented", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 #pragma warning restore IDE1006 // Naming Styles
     }

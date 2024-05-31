@@ -35,6 +35,17 @@ namespace CircleClicker.UI.Windows
                 tb_error.Content = "The password is invalid.";
                 tb_error.Visibility = Visibility.Visible;
             }
+            else if (user.IsBanned)
+            {
+                tb_error.Content =
+                    $"""
+                    This account has been banned.
+
+                    Reason: {user.BanReason ?? "No reason given."}
+                    Expires: {user.BannedUntil:g} (in {(DateTime.Now - user.BannedUntil!.Value).ToString(@"d'd 'h'h 'm'm 's's'", App.Culture)})
+                    """;
+                tb_error.Visibility = Visibility.Visible;
+            }
             else
             {
                 Main.DB.Saves.Where(v => v.User == user).Load(); // Load the user's saves

@@ -1,7 +1,8 @@
 ﻿namespace CircleClicker.Models.Database
 {
     /// <summary>
-    /// A game variable that can be stored in the database.
+    /// A game variable that can be stored in the database.<br />
+    /// Should not be accessed directly; use <see cref="VariableReference"/> for that instead.
     /// </summary>
     public class Variable
     {
@@ -19,7 +20,7 @@
     }
 
     /// <summary>
-    /// A reference to a <see cref="Variable"/>.
+    /// Holds a reference to a <see cref="Variable"/>.
     /// </summary>
     public class VariableReference
     {

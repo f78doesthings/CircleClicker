@@ -119,6 +119,9 @@ public partial class CircleClickerContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(32).HasColumnName("name");
             entity.Property(e => e.Password).HasMaxLength(128).HasColumnName("password");
             entity.Property(e => e.IsAdmin).HasColumnName("is_admin");
+            entity.Property(e => e.BannedUntil).HasColumnName("banned");
+            entity.Property(e => e.BanReason).HasColumnName("ban_reason");
+            entity.Property(e => e.BulkBuy).HasColumnType("int(11)").HasColumnName("bulk_buy");
             entity.Property(e => e.MusicVolume).HasColumnName("music_volume");
             entity.Property(e => e.SoundVolume).HasColumnName("sound_volume");
         });

@@ -89,33 +89,7 @@ namespace CircleClicker
                 try
                 {
                     // Create the database if it does not already exist
-                    bool created = await Main_.DB.Database.EnsureCreatedAsync();
-                    if (created)
-                    {
-                        MessageBoxResult result = MessageBoxEx.Show(
-                            progressBox,
-                            """
-                            Circle Clicker has successfully created a database for you.
-                            Would you like to add the default buildings and upgrades to this database?
-
-                            If you're unsure, click <b>Yes</b>.
-                            <i size="10">You can always import the default purchases at any time from the Admin Panel.</i>
-                            """,
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question
-                        );
-
-                        if (result == MessageBoxResult.Yes)
-                        {
-                            _ = Stat.Instances;
-                            Main_.Buildings = Main_.DB.Buildings.Local.ToObservableCollection();
-                            Main_.Upgrades = Main_.DB.Upgrades.Local.ToObservableCollection();
-                            Main_.Variables = Main_.DB.Variables.Local.ToObservableCollection();
-                            Main_.LoadSampleData();
-                        }
-                    }
-
-                    Main_.IsDBAvailable = true;
+                    await RecreateDatabase();
                 }
                 catch (Exception ex)
                 {
@@ -152,7 +126,7 @@ namespace CircleClicker
                 Main_.Buildings = [];
                 Main_.Upgrades = [];
                 Main_.Variables = [];
-                Main_.CurrentUser = new User("<Guest>", "") { IsAdmin = true };
+                Main_.CurrentUser = new User() { IsAdmin = true };
                 Main_.CurrentSave = new Save(Main_.CurrentUser);
 
                 if (result == MessageBoxResult.Yes)
@@ -202,6 +176,76 @@ namespace CircleClicker
                     $"Error while trying to launch {e.Uri.AbsoluteUri}:\n{ex}",
                     ErrorCategory
                 );
+            }
+        }
+
+        private static async Task RecreateDatabase(bool delete = false)
+        {
+            if (delete)
+            {
+                await Main_.DB.Database.EnsureDeletedAsync();
+            }
+
+            bool created = await Main_.DB.Database.EnsureCreatedAsync();
+            Main_.IsDBAvailable = true;
+
+            if (created)
+            {
+                MessageBoxResult result = MessageBoxEx.Show(
+                    """
+                    Circle Clicker has successfully created a database for you.
+                    Would you like to add the default buildings and upgrades to this database?
+
+                    If you're unsure, click <b>Yes</b>.
+                    <i size="12">You can always import the default purchases at any time from the Admin Panel.</i>
+                    """,
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                );
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    Main_.Buildings = Main_.DB.Buildings.Local.ToObservableCollection();
+                    Main_.Upgrades = Main_.DB.Upgrades.Local.ToObservableCollection();
+                    Main_.Variables = Main_.DB.Variables.Local.ToObservableCollection();
+                    Main_.LoadSampleData();
+                    await Main_.DB.SaveChangesAsync();
+                }
+            }
+        }
+
+        private void Application_DispatcherUnhandledException(
+            object sender,
+            System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e
+        )
+        {
+            e.Handled = true;
+            Mouse.OverrideCursor = null;
+
+            MessageBoxResult result = MessageBoxEx.Show(
+                """
+                Circle Clicker ran into an unhandled exception. <i>That's not good...</i>
+                <i size="12">If the error is database related, you may need to delete the database and let Circle Clicker recreate it. Click Yes to do so.</i>
+                """,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Error,
+                e.Exception
+            );
+
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    result = MessageBoxEx.Show("Are you sure you want to <font color=\"res:AccentBrush\">delete</font> the database? <b>There is no way back!</b>", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _ = RecreateDatabase(true);
+                    }
+                    break;
+                case MessageBoxResult.No:
+                    break;
+                default:
+                    Shutdown();
+                    break;
             }
         }
     }

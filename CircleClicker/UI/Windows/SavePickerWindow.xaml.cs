@@ -155,16 +155,24 @@ namespace CircleClicker.UI.Windows
                     Mouse.OverrideCursor = null;
                     progressBox.Close();
 
+                    string offlineTimeString = offlineTime.ToString(@"d'd 'h'h 'm'm 's's'", App.Culture);
+                    if (offlineTime > maxOfflineTime)
+                    {
+                        offlineTimeString = $"<font color=\"res:AccentBrush\">{offlineTimeString}</font>";
+                    }
+
                     string message =
-                        $"Welcome back!\n"
-                        + $"While you were gone, your buildings produced ⚫ {circlesProduced.FormatSuffixes()}.\n"
-                        + $"You were offline for {offlineTime.ToString(@"d'd 'h'h 'm'm 's's'", App.Culture)} / {maxOfflineTime.ToString(@"d'd 'h'h 'm'm 's's'", App.Culture)}.";
+                        $"""
+                        Welcome back!
+                        While you were gone, your buildings produced <b>{Currency.Circles.Format(circlesProduced, "R+")}</b>.
+                        You were offline for <b>{offlineTimeString}</b> / {maxOfflineTime.ToString(@"d'd 'h'h 'm'm 's's'", App.Culture)}.
+                        """;
 
                     if (circlesProduced == 0)
                     {
-                        message += "\n\n(Perhaps you should get some buildings...)";
+                        message += "\n<i size=\"12\">Perhaps you should get some buildings...</i>";
                     }
-                    message += $"\n\n(Calculating took {DateTime.Now - startTime})";
+                    message += $"\n\n<font color=\"res:DimForegroundBrush\">(Calculating took <b>{DateTime.Now - startTime}</b>)</font>";
                     MessageBoxEx.Show(mainWindow, message, icon: MessageBoxImage.Information);
                 });
             });

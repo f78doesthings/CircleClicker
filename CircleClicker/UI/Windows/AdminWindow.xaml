@@ -5,6 +5,7 @@
     xmlns:controls="clr-namespace:CircleClicker.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:db="clr-namespace:CircleClicker.Models.Database"
+    xmlns:globalization="clr-namespace:System.Globalization;assembly=System.Runtime"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:CircleClicker.Models"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -16,7 +17,14 @@
     Closing="Window_Closing"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
     mc:Ignorable="d">
+    <Window.Resources>
+        <DataTemplate x:Key="IdRowTemplate">
+            <TextBlock Text="{Binding DataContext.Id, RelativeSource={RelativeSource AncestorType=DataGridRow}}" />
+        </DataTemplate>
+    </Window.Resources>
+
     <Grid>
         <Button
             Name="btn_sampleData"
@@ -32,17 +40,14 @@
                 <DataGrid
                     Name="dg_buildings"
                     AutoGenerateColumns="False"
+                    RowHeaderTemplate="{StaticResource IdRowTemplate}"
                     Unloaded="DataGrid_Unloaded">
+
                     <d:DataGrid.ItemsSource>
                         <x:Array Type="db:Building">
                             <db:Building />
                         </x:Array>
                     </d:DataGrid.ItemsSource>
-                    <DataGrid.RowHeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DataContext.Id, RelativeSource={RelativeSource AncestorType=DataGridRow}}" />
-                        </DataTemplate>
-                    </DataGrid.RowHeaderTemplate>
                     <d:DataGrid.Columns>
                         <DataGridTextColumn
                             Width="*"
@@ -76,57 +81,9 @@
             <TabItem Header="Upgrades">
                 <DataGrid
                     Name="dg_upgrades"
-                    d:ItemsSource="{d:SampleData ItemCount=5}"
                     AutoGenerateColumns="False"
-                    Unloaded="DataGrid_Unloaded">
-                    <DataGrid.RowHeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DataContext.Id, RelativeSource={RelativeSource AncestorType=DataGridRow}}" />
-                        </DataTemplate>
-                    </DataGrid.RowHeaderTemplate>
-                    <d:DataGrid.Columns>
-                        <DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding Name}"
-                            Header="Name" />
-                        <DataGridComboBoxColumn
-                            Width="200"
-                            Header="Requires"
-                            ItemsSource="{x:Static models:IReadOnlyDependency.Instances}"
-                            SelectedItemBinding="{Binding RequiredDependency}" />
-                        <DataGridTemplateColumn Width="150" Header="RequiredAmount">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate DataType="db:Upgrade">
-                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding Requirement, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridComboBoxColumn
-                            Width="200"
-                            Header="Affects"
-                            ItemsSource="{x:Static models:IStat.Instances}"
-                            SelectedItemBinding="{Binding AffectedStat}" />
-                        <DataGridTemplateColumn Width="75" Header="Effect">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate DataType="db:Upgrade">
-                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding Effect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridComboBoxColumn
-                            Width="200"
-                            Header="Currency"
-                            ItemsSource="{x:Static models:IDependency.Instances}"
-                            SelectedItemBinding="{Binding CurrencyDependency}" />
-                        <DataGridTemplateColumn Width="150" Header="Cost">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate DataType="db:Upgrade">
-                                    <controls:DoubleEntryControl Maximum="{x:Static sys:Double.MaxValue}" Value="{Binding Cost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </d:DataGrid.Columns>
-                </DataGrid>
+                    RowHeaderTemplate="{StaticResource IdRowTemplate}"
+                    Unloaded="DataGrid_Unloaded" />
             </TabItem>
 
             <TabItem Header="Variables">
@@ -134,7 +91,10 @@
                     Name="dg_variables"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
-                    CanUserDeleteRows="False">
+                    CanUserDeleteRows="False"
+                    RowHeaderTemplate="{StaticResource IdRowTemplate}"
+                    Unloaded="DataGrid_Unloaded">
+
                     <d:DataGrid.ItemsSource>
                         <x:Array Type="db:Variable">
                             <db:Variable Name="Stat.CirclesPerClick.BaseValue" Value="1" />
@@ -153,15 +113,87 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
-
                 </DataGrid>
             </TabItem>
 
-            <TabItem Header="Save">
+            <TabItem
+                Name="tab_users"
+                d:IsSelected="True"
+                Header="Users">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="320" />
+                    </Grid.ColumnDefinitions>
+
+                    <DataGrid
+                        Name="dg_users"
+                        AutoGenerateColumns="False"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        IsReadOnly="True"
+                        RowHeaderTemplate="{StaticResource IdRowTemplate}">
+
+                        <d:DataGrid.ItemsSource>
+                            <x:Array Type="db:User">
+                                <db:User Name="admin" IsAdmin="True" />
+                                <db:User Name="username" />
+                                <db:User Name="banned" BannedUntil="6/7/2024 12:00" />
+                            </x:Array>
+                        </d:DataGrid.ItemsSource>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding Name}"
+                                Header="Username" />
+                            <DataGridCheckBoxColumn
+                                Width="62"
+                                Binding="{Binding IsAdmin}"
+                                Header="Admin" />
+                            <DataGridTextColumn
+                                Width="150"
+                                Binding="{Binding BannedUntil, StringFormat={}{0:g}, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"
+                                Header="Banned Until" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                        <Label>Username</Label>
+                        <TextBox Name="tbx_username" />
+
+                        <Label>Password</Label>
+                        <PasswordBox Name="pwdbx" />
+
+                        <Button Name="btn_createUser" Click="btn_createUser_Click">Create New User</Button>
+                        <Button
+                            Name="btn_updateUser"
+                            Click="btn_updateUser_Click"
+                            IsEnabled="{Binding IsUserSelected}">
+                            Update Selected User
+                        </Button>
+                        <Button
+                            Name="btn_banUser"
+                            Click="btn_banUser_Click"
+                            IsEnabled="{Binding IsUserSelected}">
+                            Ban Selected User
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Current Save">
                 <WrapPanel
                     Name="wp_save"
+                    Margin="10,0,10,10"
                     ItemWidth="250"
                     Orientation="Vertical">
+
+                    <WrapPanel.Resources>
+                        <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="TextBox">
+                            <Setter Property="Margin" Value="0,0,10,0" />
+                        </Style>
+                    </WrapPanel.Resources>
+
                     <d:WrapPanel.Children>
                         <StackPanel>
                             <Label>Circles</Label>
@@ -175,8 +207,8 @@
                 </WrapPanel>
             </TabItem>
 
-            <TabItem d:IsSelected="True" Header="Testing">
-                <WrapPanel Orientation="Vertical">
+            <TabItem Header="Testing">
+                <WrapPanel Margin="10,0,10,10" Orientation="Vertical">
                     <Label>
                         Enable button
                     </Label>
@@ -222,6 +254,7 @@
                         HorizontalAlignment="Left"
                         Click="btn_test_showMsgBox_Click"
                         IsEnabled="{Binding IsChecked, ElementName=cb_test_enableButton}">
+
                         <Button.Resources>
                             <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
                                 <Style.Triggers>

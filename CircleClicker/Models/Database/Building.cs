@@ -25,6 +25,8 @@ public class Building : Purchase, IStat
     #endregion
 
     #region Values for CurrentSave
+    public override string Description => $"Base: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Value, "R+")}/s</font> | Total: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Production, "R+")}/s</font>";
+
     public override int Amount
     {
         get => base.Amount;

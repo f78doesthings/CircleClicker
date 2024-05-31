@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:CircleClicker.Utils.Converters"
     xmlns:selectors="clr-namespace:CircleClicker.Utils.Selectors"
+    DispatcherUnhandledException="Application_DispatcherUnhandledException"
     Startup="Application_Startup">
 
     <Application.Resources>
@@ -23,6 +24,8 @@
         <Color x:Key="DarkSquareColor">#2424b2</Color>
         <Color x:Key="SquareColor">#9c2feb</Color>
         <Color x:Key="BrightSquareColor">#f230e2</Color>
+        <Color x:Key="DarkTriangleColor">#e58a0b</Color>
+        <Color x:Key="TriangleColor">#f2cb0c</Color>
         <Color x:Key="DarkAccentColor">#b21114</Color>
         <Color x:Key="AccentColor">#dd1619</Color>
         <Color x:Key="BrightAccentColor">#ff2b2e</Color>
@@ -33,9 +36,14 @@
         <SolidColorBrush x:Key="BrightBorderBrush" Color="{StaticResource BrightBorderColor}" />
         <SolidColorBrush x:Key="DimForegroundBrush" Color="{StaticResource DimForegroundColor}" />
         <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}" />
+
         <LinearGradientBrush x:Key="SquareBrush" StartPoint="0,1" EndPoint="0,0">
             <GradientStop Color="{StaticResource DarkSquareColor}" />
             <GradientStop Offset="1" Color="{StaticResource SquareColor}" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="TriangleBrush" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="{StaticResource DarkTriangleColor}" />
+            <GradientStop Offset="1" Color="{StaticResource TriangleColor}" />
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,1" EndPoint="0,0">
             <GradientStop Color="{StaticResource DarkAccentColor}" />
@@ -203,12 +211,40 @@
             </Style.Triggers>
         </Style>
 
+        <Style
+            x:Key="BasicButtonTemplate"
+            Resources="{StaticResource RoundedCorners}"
+            TargetType="Button">
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="Margin" Value="0,16,0,0" />
+            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            Name="border"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style Resources="{StaticResource RoundedCorners}" TargetType="Button">
             <Setter Property="Padding" Value="16,8" />
             <Setter Property="Margin" Value="0,16,0,0" />
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
             <Setter Property="Background" Value="{StaticResource AccentBrush}" />
             <Setter Property="BorderThickness" Value="0" />
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -219,17 +255,134 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[0].Color"
+                                                To="{StaticResource DarkAccentColor}"
+                                                Duration="0:0:0.2">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[1].Color"
+                                                To="{StaticResource AccentColor}"
+                                                Duration="0:0:0.2">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[0].Color"
+                                                To="{StaticResource AccentColor}"
+                                                Duration="0:0:0.2">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[1].Color"
+                                                To="{StaticResource BrightAccentColor}"
+                                                Duration="0:0:0.2">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[0].Color"
+                                                To="{StaticResource DarkAccentColor}"
+                                                Duration="0:0:0.2">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[1].Color"
+                                                To="{StaticResource DarkAccentColor}"
+                                                Duration="0:0:0.2">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[0].Color"
+                                                To="{StaticResource ControlColor}"
+                                                Duration="0:0:0">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="border"
+                                                Storyboard.TargetProperty="Background.GradientStops[1].Color"
+                                                To="{StaticResource ControlColor}"
+                                                Duration="0:0:0">
+                                                <ColorAnimation.EasingFunction>
+                                                    <QuadraticEase />
+                                                </ColorAnimation.EasingFunction>
+                                            </ColorAnimation>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
+
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Background" Value="{StaticResource ControlBrush}" />
-                    <Setter Property="Foreground" Value="{StaticResource DimForegroundBrush}" />
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource BrightAccentBrush}" />
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                                    Storyboard.TargetProperty="Foreground.Color"
+                                    To="{StaticResource DimForegroundColor}"
+                                    Duration="0:0:0">
+                                    <ColorAnimation.EasingFunction>
+                                        <QuadraticEase />
+                                    </ColorAnimation.EasingFunction>
+                                </ColorAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                                    Storyboard.TargetProperty="Foreground.Color"
+                                    To="{StaticResource ForegroundColor}"
+                                    Duration="0:0:0.2">
+                                    <ColorAnimation.EasingFunction>
+                                        <QuadraticEase />
+                                    </ColorAnimation.EasingFunction>
+                                </ColorAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -240,6 +393,7 @@
             <Setter Property="Background" Value="{StaticResource ControlBrush}" />
             <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
             <Setter Property="BorderThickness" Value="0" />
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ProgressBar">
@@ -330,6 +484,7 @@
                     <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
                 </Style>
             </Style.Resources>
+
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
             <Setter Property="RowBackground" Value="{StaticResource BackgroundBrush}" />
@@ -383,6 +538,7 @@
                     <Setter Property="CaretBrush" Value="{StaticResource ForegroundBrush}" />
                 </Style>
             </Style.Resources>
+
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
         </Style>
@@ -396,6 +552,7 @@
         <Style TargetType="TabItem">
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
             <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
@@ -440,6 +597,7 @@
         <Style TargetType="ItemsControl">
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="0" />
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ItemsControl">
@@ -459,6 +617,7 @@
 
         <Style TargetType="Expander">
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Expander">

@@ -39,26 +39,22 @@ namespace CircleClicker.UI.Windows
                 tb_error.Content = "The passwords do not match.";
                 tb_error.Visibility = Visibility.Visible;
             }
-            else if (Main.DB.Users.Any(user => user.Name == tbx_username.Text))
-            {
-                tb_error.Content = "That username is taken.";
-                tb_error.Visibility = Visibility.Visible;
-            }
             else
             {
-                User user = new(tbx_username.Text, BC.HashPassword(pwdbx.Password));
-                if (tbx_username.Text == "admin")
+                User? user = User.CreateUser(tbx_username.Text, pwdbx.Password, out string errorMessage);
+                if (user == null)
                 {
-                    user.IsAdmin = true;
+                    tb_error.Content = errorMessage;
+                    tb_error.Visibility = Visibility.Visible;
                 }
+                else
+                {
+                    Main.DB.Saves.Load();
+                    Main.CurrentUser = user;
 
-                Main.DB.Users.Add(user);
-                Main.DB.SaveChanges();
-                Main.DB.Saves.Load();
-                Main.CurrentUser = user;
-
-                new SavePickerWindow().Show();
-                Close();
+                    new SavePickerWindow().Show();
+                    Close();
+                }
             }
 
             Mouse.OverrideCursor = null;

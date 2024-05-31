@@ -15,7 +15,8 @@
             HorizontalContentAlignment="Right"
             VerticalContentAlignment="Center"
             GotFocus="tb_GotFocus"
-            LostFocus="tb_LostFocus"
-            Text="{Binding Value, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType=controls:NumericEntryControl}}" />
+            LostFocus="tb_LostFocus">
+            0
+        </TextBox>
     </DockPanel>
 </UserControl>

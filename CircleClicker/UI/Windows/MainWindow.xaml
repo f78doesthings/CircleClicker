@@ -14,194 +14,85 @@
     Title="Circle Clicker"
     Width="1280"
     Height="720"
+    MinWidth="960"
+    MinHeight="600"
     d:DataContext="{d:DesignInstance Type=windows:MainWindow}"
     Closing="Window_Closing"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
     mc:Ignorable="d">
 
-    <!--  BUG: Resources are suddenly completely broken, but only in the designer  -->
     <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <d:ResourceDictionary>
-                    <x:Array x:Key="DesignBuildings" Type="db:Building">
-                        <db:Building
-                            Name="Example Building"
-                            BaseCost="1.234"
-                            BaseProduction="1.234" />
-                        <db:Building
-                            Name="Example Building 2"
-                            BaseCost="1234.567"
-                            BaseProduction="1234.567" />
-                        <db:Building
-                            Name="Example Building 3"
-                            BaseCost="1234567"
-                            BaseProduction="1234567" />
-                        <db:Building
-                            Name="Example Building 4"
-                            BaseCost="1234567890"
-                            BaseProduction="1234567890" />
-                        <db:Building
-                            Name="Example Building 5"
-                            BaseCost="1234567890123"
-                            BaseProduction="1234567890123" />
-                        <db:Building
-                            Name="Example Building 6"
-                            BaseCost="1234567890123456"
-                            BaseProduction="1234567890123456" />
-                        <db:Building
-                            Name="Example Building 7"
-                            BaseCost="1234567890123456789"
-                            BaseProduction="1234567890123456789" />
-                        <db:Building
-                            Name="Example Building 8"
-                            BaseCost="1234567890123456789012"
-                            BaseProduction="1234567890123456789012" />
-                    </x:Array>
-                    <x:Array x:Key="DesignUpgrades" Type="db:Upgrade">
-                        <db:Upgrade
-                            Name="Example Upgrade"
-                            BaseCost="1234567"
-                            Description="Lorem ipsum dolor sit amet x1.00 ➝ x2.00" />
-                    </x:Array>
-                </d:ResourceDictionary>
+        <CollectionViewSource
+            x:Key="cvs_buildings"
+            x:Name="cvs_buildings"
+            Filter="cvs_buildings_Filter"
+            IsLiveFilteringRequested="True"
+            IsLiveSortingRequested="True"
+            Source="{Binding Main.Buildings}">
 
-                <ResourceDictionary>
-                    <CollectionViewSource
-                        x:Key="cvs_buildings"
-                        x:Name="cvs_buildings"
-                        Filter="cvs_buildings_Filter"
-                        IsLiveFilteringRequested="True"
-                        IsLiveSortingRequested="True"
-                        Source="{Binding Main.Buildings}">
-                        <CollectionViewSource.SortDescriptions>
-                            <cm:SortDescription Direction="Ascending" PropertyName="BaseProduction" />
-                        </CollectionViewSource.SortDescriptions>
-                        <CollectionViewSource.LiveFilteringProperties>
-                            <sys:String>IsUnlocked</sys:String>
-                        </CollectionViewSource.LiveFilteringProperties>
-                    </CollectionViewSource>
+            <CollectionViewSource.SortDescriptions>
+                <cm:SortDescription Direction="Ascending" PropertyName="BaseProduction" />
+            </CollectionViewSource.SortDescriptions>
+            <CollectionViewSource.LiveFilteringProperties>
+                <sys:String>IsUnlocked</sys:String>
+            </CollectionViewSource.LiveFilteringProperties>
+        </CollectionViewSource>
 
-                    <!--  TODO: consider merging these into one template  -->
-                    <DataTemplate x:Key="BuildingTemplate" DataType="db:Building">
-                        <Border
-                            Padding="12,7,12,13"
-                            BorderBrush="{StaticResource BorderBrush}"
-                            BorderThickness="0,0,0,1">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
+        <DataTemplate x:Key="PurchaseTemplate" DataType="db:Purchase">
+            <Border
+                Padding="12,7,12,13"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-                                <TextBlock Style="{StaticResource SubtitleStyle}" Text="{Binding Name}" />
-                                <TextBlock
-                                    Grid.Column="1"
-                                    HorizontalAlignment="Right"
-                                    FontSize="16"
-                                    Text="{Binding AmountText, FallbackValue=Level 0}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    VerticalAlignment="Center"
-                                    Foreground="{StaticResource DimForegroundBrush}"
-                                    TextWrapping="Wrap">
-                                    <Run Text="Base:" />
-                                    <Run Text="{Binding Value, Converter={StaticResource SuffixFormatter}, StringFormat=⚫ {0}/s, Mode=OneWay}" />
-                                    <LineBreak />
-                                    <Run Text="Total:" />
-                                    <Run Text="{Binding Production, Converter={StaticResource SuffixFormatter}, StringFormat=⚫ {0}/s, Mode=OneWay}" />
-                                </TextBlock>
+                    <TextBlock Style="{StaticResource SubtitleStyle}" Text="{Binding Name}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" />
+                    <controls:RichTextBlock
+                        Grid.Row="1"
+                        Foreground="{StaticResource DimForegroundBrush}"
+                        Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" />
 
-                                <Button
-                                    Name="btn_buyBuilding"
-                                    Grid.Row="1"
-                                    Grid.Column="2"
-                                    Margin="10,4,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="btn_buy_Click"
-                                    Content="{Binding CostText, TargetNullValue=⚫ 123\,456}"
-                                    ContentStringFormat="Buy for {0}"
-                                    IsEnabled="{Binding CanAfford}" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
+                    <Button
+                        Name="btn_buy"
+                        Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Center"
+                        Click="btn_buy_Click"
+                        IsEnabled="{Binding CanAfford}">
 
-                    <DataTemplate x:Key="UpgradeTemplate" DataType="db:Upgrade">
-                        <Border
-                            Padding="12,7,12,13"
-                            BorderBrush="{StaticResource BorderBrush}"
-                            BorderThickness="0,0,0,1">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <!--<Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>-->
+                        <controls:RichTextBlock Text="{Binding CostText, UpdateSourceTrigger=PropertyChanged}" />
+                    </Button>
+                </Grid>
+            </Border>
+        </DataTemplate>
 
-                                <TextBlock Style="{StaticResource SubtitleStyle}" Text="{Binding Name}" />
-                                <TextBlock
-                                    Grid.Column="1"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Center"
-                                    FontSize="16"
-                                    Text="{Binding AmountText}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    Foreground="{StaticResource DimForegroundBrush}"
-                                    Text="{Binding Description}"
-                                    TextWrapping="Wrap" />
-
-                                <Button
-                                    Name="btn_buyUpgrade"
-                                    Grid.Row="2"
-                                    Grid.ColumnSpan="2"
-                                    Margin="0,8,0,0"
-                                    HorizontalAlignment="Center"
-                                    Click="btn_buy_Click"
-                                    Content="{Binding CostText, TargetNullValue=⚫ 123\,456}"
-                                    ContentStringFormat="Buy for {0}"
-                                    IsEnabled="{Binding CanAfford}" />
-                                <Button
-                                    Name="btn_removeUpgrade"
-                                    Grid.Row="2"
-                                    Grid.Column="2"
-                                    Margin="0,8,0,0"
-                                    HorizontalAlignment="Right"
-                                    Click="btn_removeUpgrade_Click"
-                                    IsEnabled="{Binding IsPurchased}"
-                                    Visibility="{Binding IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType=windows:MainWindow}}">
-                                    -1
-                                </Button>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-
-                    <DataTemplate x:Key="FloatSettingTemplate" DataType="models:FloatSetting">
-                        <Grid Margin="0,3,0,7">
-                            <Label
-                                Padding="0"
-                                VerticalAlignment="Center"
-                                Content="{Binding Name}" />
-                            <controls:FloatEntryControl
-                                MinWidth="100"
-                                HorizontalAlignment="Right"
-                                Maximum="{Binding Maximum}"
-                                Minimum="{Binding Minimum}"
-                                Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                        </Grid>
-                    </DataTemplate>
-                </ResourceDictionary>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        <DataTemplate x:Key="FloatSettingTemplate" DataType="models:FloatSetting">
+            <Grid Margin="0,3,0,7">
+                <Label
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    Content="{Binding Name}" />
+                <controls:FloatEntryControl
+                    MinWidth="100"
+                    HorizontalAlignment="Right"
+                    Maximum="{Binding Maximum}"
+                    Minimum="{Binding Minimum}"
+                    Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Margin="20,16">
@@ -230,6 +121,7 @@
             Grid.Column="1"
             HorizontalAlignment="Center"
             Orientation="Horizontal">
+
             <d:WrapPanel.Children>
                 <controls:CurrencyDisplay DataContext="{x:Static models:Currency.Circles}" />
                 <controls:CurrencyDisplay DataContext="{x:Static models:Currency.Triangles}" Visibility="Visible" />
@@ -272,11 +164,47 @@
                 <ItemsControl
                     Name="ic_buildings"
                     Grid.Row="2"
-                    d:ItemsSource="{StaticResource DesignBuildings}"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="0,1,0,0"
-                    ItemTemplate="{StaticResource BuildingTemplate}"
-                    ItemsSource="{Binding Source={StaticResource cvs_buildings}}" />
+                    ItemTemplate="{StaticResource PurchaseTemplate}"
+                    ItemsSource="{Binding Source={StaticResource cvs_buildings}}">
+                    <d:ItemsControl.ItemsSource>
+                        <x:Array Type="db:Building">
+                            <db:Building
+                                Name="Example Building"
+                                BaseCost="1.234"
+                                BaseProduction="1.234" />
+                            <db:Building
+                                Name="Example Building 2"
+                                BaseCost="1234.567"
+                                BaseProduction="1234.567" />
+                            <db:Building
+                                Name="Example Building 3"
+                                BaseCost="1234567"
+                                BaseProduction="1234567" />
+                            <db:Building
+                                Name="Example Building 4"
+                                BaseCost="1234567890"
+                                BaseProduction="1234567890" />
+                            <db:Building
+                                Name="Example Building 5"
+                                BaseCost="1234567890123"
+                                BaseProduction="1234567890123" />
+                            <db:Building
+                                Name="Example Building 6"
+                                BaseCost="1234567890123456"
+                                BaseProduction="1234567890123456" />
+                            <db:Building
+                                Name="Example Building 7"
+                                BaseCost="1234567890123456789"
+                                BaseProduction="1234567890123456789" />
+                            <db:Building
+                                Name="Example Building 8"
+                                BaseCost="1234567890123456789012"
+                                BaseProduction="1234567890123456789012" />
+                        </x:Array>
+                    </d:ItemsControl.ItemsSource>
+                </ItemsControl>
             </Grid>
         </Border>
         <!--#endregion-->
@@ -303,19 +231,22 @@
                             Header="1"
                             HeaderStringFormat="Circles"
                             HeaderTemplate="{StaticResource TabHeaderWithNotice}">
-                            <ItemsControl
-                                Name="ic_availableUpgrades"
-                                d:ItemsSource="{StaticResource DesignUpgrades}"
-                                ItemTemplate="{StaticResource UpgradeTemplate}" />
+                            <ItemsControl Name="ic_availableUpgrades" ItemTemplate="{StaticResource PurchaseTemplate}">
+                                <d:ItemsControl.ItemsSource>
+                                    <x:Array Type="db:Upgrade">
+                                        <db:Upgrade
+                                            Name="Example Upgrade"
+                                            BaseCost="1234567"
+                                            DesignDescription="Lorem ipsum dolor sit amet x1.00 ➝ x2.00" />
+                                    </x:Array>
+                                </d:ItemsControl.ItemsSource>
+                            </ItemsControl>
                         </TabItem>
                         <TabItem
                             Header=" (0/1)"
                             HeaderStringFormat="Purchased"
                             HeaderTemplate="{StaticResource TabHeaderWithCount}">
-                            <ItemsControl
-                                Name="ic_unlockedUpgrades"
-                                d:ItemsSource="{StaticResource DesignUpgrades}"
-                                ItemTemplate="{StaticResource UpgradeTemplate}" />
+                            <ItemsControl Name="ic_unlockedUpgrades" ItemTemplate="{StaticResource PurchaseTemplate}" />
                         </TabItem>
                     </d:TabControl.Items>
                 </TabControl>
@@ -324,6 +255,7 @@
         <!--#endregion-->
 
         <!--#region Buttons-->
+        <!--  TODO: set Focusable to False after course ends  -->
         <Button
             Name="btn_clicker"
             Grid.Row="1"
@@ -332,19 +264,22 @@
             MaxWidth="300"
             MaxHeight="300"
             Margin="20"
+            BorderThickness="0"
             Click="btn_clicker_Click"
+            Focusable="True"
             FontSize="20"
+            Foreground="{StaticResource ForegroundBrush}"
             PreviewMouseLeftButtonDown="btn_clicker_PreviewMouseLeftButtonDown"
             PreviewMouseLeftButtonUp="btn_clicker_PreviewMouseLeftButtonUp"
             RenderTransformOrigin="0.5, 0.5">
+
             <Button.Resources>
                 <Style
-                    BasedOn="{StaticResource {x:Type Button}}"
+                    BasedOn="{StaticResource BasicButtonTemplate}"
                     Resources="{StaticResource FullyRoundedCorners}"
                     TargetType="Button">
                     <Style.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -451,94 +386,120 @@
             Grid.Column="1"
             VerticalAlignment="Bottom">
 
-            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                <StackPanel.Resources>
-                    <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-                        <Setter Property="Margin" Value="5,0" />
-                    </Style>
-                </StackPanel.Resources>
+            <Label
+                Padding="0,0,10,8"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top">
+                Bulk buy (0 = max)
+            </Label>
 
-                <Button
-                    Name="btn_reincarnate"
-                    Grid.Row="2"
-                    Grid.Column="1"
-                    Padding="0"
-                    Click="btn_reincarnate_Click"
-                    IsEnabled="{Binding CanReincarnate, FallbackValue=False}">
-                    <Button.Resources>
+            <DockPanel Margin="0,0,10,0">
+                <WrapPanel VerticalAlignment="Center">
+                    <WrapPanel.Resources>
                         <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-                            <Style.Triggers>
-                                <Trigger Property="IsEnabled" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource SquareBrush}" />
-                                    <Trigger.EnterActions>
-                                        <BeginStoryboard>
-                                            <Storyboard AutoReverse="True" RepeatBehavior="Forever">
-                                                <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="Background.GradientStops[0].Color" Duration="0:0:2.5">
-                                                    <EasingColorKeyFrame KeyTime="0%" Value="{StaticResource DarkSquareColor}">
-                                                        <EasingColorKeyFrame.EasingFunction>
-                                                            <QuadraticEase EasingMode="EaseInOut" />
-                                                        </EasingColorKeyFrame.EasingFunction>
-                                                    </EasingColorKeyFrame>
-                                                    <EasingColorKeyFrame KeyTime="100%" Value="{StaticResource SquareColor}">
-                                                        <EasingColorKeyFrame.EasingFunction>
-                                                            <QuadraticEase EasingMode="EaseInOut" />
-                                                        </EasingColorKeyFrame.EasingFunction>
-                                                    </EasingColorKeyFrame>
-                                                </ColorAnimationUsingKeyFrames>
-                                                <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="Background.GradientStops[1].Color" Duration="0:0:2.5">
-                                                    <EasingColorKeyFrame KeyTime="0%" Value="{StaticResource SquareColor}">
-                                                        <EasingColorKeyFrame.EasingFunction>
-                                                            <QuadraticEase EasingMode="EaseInOut" />
-                                                        </EasingColorKeyFrame.EasingFunction>
-                                                    </EasingColorKeyFrame>
-                                                    <EasingColorKeyFrame KeyTime="100%" Value="{StaticResource BrightSquareColor}">
-                                                        <EasingColorKeyFrame.EasingFunction>
-                                                            <QuadraticEase EasingMode="EaseInOut" />
-                                                        </EasingColorKeyFrame.EasingFunction>
-                                                    </EasingColorKeyFrame>
-                                                </ColorAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </Trigger.EnterActions>
-                                </Trigger>
-                            </Style.Triggers>
+                            <Setter Property="Margin" Value="10,0,0,0" />
                         </Style>
-                    </Button.Resources>
+                    </WrapPanel.Resources>
 
-                    <Grid>
-                        <ProgressBar
-                            Height="Auto"
-                            Margin="0"
-                            Foreground="{StaticResource SquareBrush}"
-                            Visibility="{Binding ShowReincarnateProgress, FallbackValue=Visible}"
-                            Value="{Binding ReincarnateProgress, Mode=OneWay, FallbackValue=50}" />
-                        <TextBlock
-                            Padding="16,8"
-                            VerticalAlignment="Center"
-                            Text="{Binding PendingSquaresText, FallbackValue=Reincarnate!}" />
-                    </Grid>
-                </Button>
+                    <Button
+                        Name="btn_reincarnate"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="10,0,0,0"
+                        Padding="0"
+                        Click="btn_reincarnate_Click"
+                        IsEnabled="{Binding CanReincarnate, FallbackValue=False}">
 
-                <Button
-                    Name="btn_admin"
-                    Grid.Row="2"
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    Click="btn_admin_Click">
-                    Open Admin Panel
-                </Button>
-            </StackPanel>
+                        <Button.Resources>
+                            <Style BasedOn="{StaticResource BasicButtonTemplate}" TargetType="Button">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Foreground" Value="{StaticResource DimForegroundBrush}" />
+                                        <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource SquareBrush}" />
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                                    <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="Background.GradientStops[0].Color" Duration="0:0:2.5">
+                                                        <EasingColorKeyFrame KeyTime="0%" Value="{StaticResource DarkSquareColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                        <EasingColorKeyFrame KeyTime="100%" Value="{StaticResource SquareColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                    </ColorAnimationUsingKeyFrames>
+                                                    <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="Background.GradientStops[1].Color" Duration="0:0:2.5">
+                                                        <EasingColorKeyFrame KeyTime="0%" Value="{StaticResource SquareColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                        <EasingColorKeyFrame KeyTime="100%" Value="{StaticResource BrightSquareColor}">
+                                                            <EasingColorKeyFrame.EasingFunction>
+                                                                <QuadraticEase EasingMode="EaseInOut" />
+                                                            </EasingColorKeyFrame.EasingFunction>
+                                                        </EasingColorKeyFrame>
+                                                    </ColorAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Resources>
+
+                        <Grid>
+                            <ProgressBar
+                                Height="Auto"
+                                Margin="0"
+                                Foreground="{StaticResource SquareBrush}"
+                                Visibility="{Binding ShowReincarnateProgress, FallbackValue=Visible}"
+                                Value="{Binding ReincarnateProgress, Mode=OneWay, FallbackValue=50}" />
+
+                            <TextBlock
+                                Padding="16,8"
+                                VerticalAlignment="Center"
+                                Text="{Binding PendingSquaresText, FallbackValue=Reincarnate!}" />
+                        </Grid>
+                    </Button>
+
+                    <Button
+                        Name="btn_admin"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Click="btn_admin_Click">
+                        Open Admin Panel
+                    </Button>
+                </WrapPanel>
+
+                <controls:IntEntryControl
+                    Width="80"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    DockPanel.Dock="Right"
+                    Maximum="1000"
+                    Minimum="{Binding BulkBuyMinimum}"
+                    Value="{Binding User.BulkBuy, Mode=TwoWay}" />
+            </DockPanel>
             <!--#endregion-->
 
             <!--#region Stats & Settings-->
             <Expander
-                MaxHeight="{Binding ActualHeight, Converter={StaticResource MultiplierConverter}, ConverterParameter=0.4, FallbackValue=288}"
+                MaxHeight="{Binding ActualHeight, Converter={StaticResource MultiplierConverter}, ConverterParameter=0.3, FallbackValue=225}"
                 Margin="10,5,0,0"
                 d:IsExpanded="True"
                 Header="Show Stats &amp; Settings">
+
                 <ScrollViewer Padding="0,0,10,0" VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <TextBlock Style="{StaticResource SubtitleStyle}">Stats</TextBlock>
+
                         <ItemsControl ItemsSource="{x:Static models:ReadOnlyDependency.Instances}">
                             <d:ItemsControl.ItemsSource>
                                 <x:Array Type="models:ReadOnlyDependency">

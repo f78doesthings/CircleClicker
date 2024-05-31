@@ -35,7 +35,6 @@ public partial class Upgrade : Purchase
     #region Stat references
     [MaybeNull]
     private IStat _affects;
-    private string? _designDescription;
 
     /// <summary>
     /// The stat this upgrade affects.<br />
@@ -54,25 +53,40 @@ public partial class Upgrade : Purchase
         }
     }
 
-    /// <summary>
-    /// The description of this upgrade.
-    /// </summary>
-    [NotMapped]
-    public string Description
+    public string? DesignDescription
     {
-        get =>
-            _designDescription
-            ?? string.Format(
+        private get;
+        [Obsolete("This setter may only be used in design instances.", true)]
+        set;
+    }
+
+    [NotMapped]
+    public override string Description
+    {
+        get
+        {
+            if (DesignDescription != null) return DesignDescription;
+
+            string effectPart;
+            if (Amount == 0)
+            {
+                effectPart = $"<font color=\"res:ForegroundBrush\">{GetEffect(Amount + ClampedBulkBuy).FormatSuffixes()}</font>";
+            }
+            else if ((MaxAmount > 0 && Amount == MaxAmount && ClampedBulkBuy > 0) || ClampedBulkBuy == 0)
+            {
+                effectPart = $"<font color=\"res:ForegroundBrush\">{Effect.FormatSuffixes()}</font>";
+            }
+            else
+            {
+                effectPart = $"{Effect.FormatSuffixes()} ➝ <font color=\"res:ForegroundBrush\">{GetEffect(Amount + ClampedBulkBuy).FormatSuffixes()}</font>";
+            }
+
+            return string.Format(
                 App.Culture,
                 Affects?.Description ?? "",
-                Amount == 0
-                    ? GetEffect(Amount + 1).FormatSuffixes()
-                    : MaxAmount > 0 && Amount == MaxAmount
-                        ? Effect.FormatSuffixes()
-                        : $"{Effect.FormatSuffixes()} ➝ {GetEffect(Amount + 1).FormatSuffixes()}"
+                effectPart
             );
-        [Obsolete("This setter only exists for use in design instances.", true)]
-        set => _designDescription = value;
+        }
     }
     #endregion
 

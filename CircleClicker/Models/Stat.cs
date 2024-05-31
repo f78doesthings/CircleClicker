@@ -1,10 +1,9 @@
 ﻿using CircleClicker.Models.Database;
 using CircleClicker.Utils;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CircleClicker.Models
 {
-    // TODO: Look into caching stat values to speed up offline production calculation
+    // TODO: Look into caching stat values to speed up calculations
 
     /// <summary>
     /// The base interface for something that can be boosted by <see cref="Upgrade"/>s.
@@ -130,7 +129,7 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(TrianglesPerClick),
                 Name = "Triangle multiplier",
-                Description = "Increases the triangles you earn from clicking by x{0}."
+                Description = "Increases the <font color=\"res:TriangleBrush\">triangles</font> you earn from clicking by x{0}."
             };
 
         /// <summary>
@@ -142,7 +141,7 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(TriangleChance),
                 Name = "% chance to earn triangles per click",
-                Description = "Increases the chance to earn triangles from clicking by +{0}%.",
+                Description = "Increases the chance to earn <font color=\"res:TriangleBrush\">triangles</font> from clicking by +{0}%.",
                 DefaultBaseValue = 0.5,
                 IsAdditive = true,
                 CustomFormula = v => v / 100
@@ -156,7 +155,7 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(Squares),
                 Name = "Square multiplier",
-                Description = "Increases the squares you earn from reincarnating by x{0}.",
+                Description = "Increases the <font color=\"res:SquareBrush\">squares</font> you earn from reincarnating by x{0}.",
             };
 
         /// <summary>

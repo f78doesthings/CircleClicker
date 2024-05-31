@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using CircleClicker.Models;
+﻿using CircleClicker.Models;
 using CircleClicker.Models.Database;
 using CircleClicker.Utils;
+using System.Collections.ObjectModel;
 
 namespace CircleClicker
 {
@@ -152,7 +152,8 @@ namespace CircleClicker
             {
                 building.InvokePropertyChanged(
                     nameof(building.IsUnlocked),
-                    nameof(building.CanAfford)
+                    nameof(building.CanAfford),
+                    nameof(building.CostText)
                 );
             }
 
@@ -160,7 +161,9 @@ namespace CircleClicker
             {
                 upgrade.InvokePropertyChanged(
                     nameof(upgrade.IsUnlocked),
-                    nameof(upgrade.CanAfford)
+                    nameof(upgrade.CanAfford),
+                    nameof(upgrade.CostText),
+                    nameof(upgrade.Description)
                 );
             }
 
