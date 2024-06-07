@@ -1,0 +1,55 @@
+﻿<Window
+    x:Class="CircleClicker.UI.Windows.LeaderboardWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:db="clr-namespace:CircleClicker.Models.Database"
+    Title="Leaderboards - Circle Clicker"
+    Width="440"
+    Height="400"
+    ResizeMode="NoResize"
+    Style="{StaticResource WindowStyle}"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <TabControl Name="tc_leaderboards">
+        <TabItem Header="Circles">
+            <ItemsControl>
+                <d:ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="db:Save">
+                        <Grid Background="{StaticResource ControlBrush}">
+                            <Grid Margin="15,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" FontWeight="Black">1.</TextBlock>
+                                <TextBlock Grid.Column="1" Text="{Binding User.Name, FallbackValue=username}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    FontWeight="Bold"
+                                    Text="{Binding LifetimeCircles}" />
+                            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </d:ItemsControl.ItemTemplate>
+                <d:ItemsControl.ItemsSource>
+                    <x:Array Type="db:Save">
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                        <db:Save />
+                    </x:Array>
+                </d:ItemsControl.ItemsSource>
+            </ItemsControl>
+        </TabItem>
+    </TabControl>
+</Window>

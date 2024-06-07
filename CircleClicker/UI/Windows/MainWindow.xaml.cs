@@ -1,11 +1,4 @@
-﻿using CircleClicker.Models;
-using CircleClicker.Models.Database;
-using CircleClicker.UI.Controls;
-using CircleClicker.UI.Particles;
-using CircleClicker.Utils.Audio;
-using CircleClicker.Utils.Converters;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +6,13 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using CircleClicker.Models;
+using CircleClicker.Models.Database;
+using CircleClicker.UI.Controls;
+using CircleClicker.UI.Particles;
+using CircleClicker.Utils.Audio;
+using CircleClicker.Utils.Converters;
+using Microsoft.EntityFrameworkCore;
 
 namespace CircleClicker.UI.Windows
 {
@@ -25,7 +25,8 @@ namespace CircleClicker.UI.Windows
 #pragma warning disable CA1822 // Mark members as static
         public Main Main => Main.Instance;
 
-        public User User => Main.CurrentUser ?? throw new NullReferenceException("Main.CurrentUser is null.");
+        public User User =>
+            Main.CurrentUser ?? throw new NullReferenceException("Main.CurrentUser is null.");
 
         public Save Save =>
             Main.CurrentSave ?? throw new NullReferenceException("Main.CurrentSave is null.");
@@ -113,11 +114,7 @@ namespace CircleClicker.UI.Windows
                     v is Upgrade u && u.Currency == currency && u.IsUnlocked;
 
                 ItemsControl upgradeContainer =
-                    new()
-                    {
-                        ItemsSource = unlockedCVS.View,
-                        ItemTemplate = purchaseTemplate
-                    };
+                    new() { ItemsSource = unlockedCVS.View, ItemTemplate = purchaseTemplate };
 
                 TabItem tab =
                     new()
@@ -182,11 +179,7 @@ namespace CircleClicker.UI.Windows
             purchasedTab.SetBinding(HeaderedContentControl.HeaderProperty, headerBinding);
 
             ItemsControl purchasedItems =
-                new()
-                {
-                    ItemsSource = purchasedCVS.View,
-                    ItemTemplate = purchaseTemplate
-                };
+                new() { ItemsSource = purchasedCVS.View, ItemTemplate = purchaseTemplate };
             purchasedTab.Content = purchasedItems;
             tc_upgrades.Items.Add(purchasedTab);
 
@@ -326,14 +319,14 @@ namespace CircleClicker.UI.Windows
                 Save.TriangleClicks++;
 
                 TextParticle triangleParticle =
-                    new(cnvs, $"+{Currency.Triangles.Format(trianglesGained)}", mousePos);
+                    new(cnvs, $"+{Currency.Triangles.Format(trianglesGained)}!", mousePos);
                 triangleParticle.Velocity *= 1.5;
                 triangleParticle.MaxLifetime += 0.6;
 
                 triangleParticle.Element.Foreground = Currency.Triangles.Brush;
                 triangleParticle.Element.FontSize = 22;
                 triangleParticle.Element.FontWeight = FontWeights.Black;
-                Panel.SetZIndex(triangleParticle.Element, 1);
+                Panel.SetZIndex(triangleParticle.Element, 1); // Display triangle particles on top of other particles
 
                 Particles.Add(triangleParticle);
                 AudioPlaybackEngine.Instance.PlaySound(Sounds.Collect, variation: 0.1);
@@ -342,18 +335,6 @@ namespace CircleClicker.UI.Windows
             TextParticle particle =
                 new(cnvs, $"+{Currency.Circles.Format(circlesGained)}", mousePos);
             Particles.Add(particle);
-        }
-
-        /// <summary>
-        /// Called when the Open Admin Panel button is clicked.
-        /// </summary>
-        private void btn_admin_Click(object sender, RoutedEventArgs e)
-        {
-            if (IsAdmin)
-            {
-                AdminWindow adminWindow = new() { Owner = this };
-                adminWindow.ShowDialog();
-            }
         }
 
         /// <summary>
@@ -387,9 +368,15 @@ namespace CircleClicker.UI.Windows
 
             MessageBoxResult result = MessageBoxEx.Show(
                 this,
-                $"By reincarnating, you will lose all of your circles, triangles, buildings, circle upgrades and triangle upgrades.\n"
-                    + $"In return, you'll receive {Currency.Squares.Format(Currency.Squares.Pending)}, which you can spend on powerful, permanent upgrades.\n"
-                    + $"Are you sure you want to do this?",
+                $"""
+                By reincarnating, you will <b color="res:AccentBrush">lose</b> all of your <font color="res:AccentBrush">circles</font>, <font color="res:TriangleBrush">triangles</font>, <font color="res:BrightSquareBrush">buildings</font>, <font color="res:AccentBrush">circle</font> <font color="res:BrightSquareBrush">upgrades</font> and <font color="res:TriangleBrush">triangle</font> <font color="res:BrightSquareBrush">upgrades</font>.
+                In return, you'll receive <b>{Currency.Squares.Format(
+                    Currency.Squares.Pending,
+                    "R+"
+                )}</b>, which you can spend on <b color="res:BrightSquareBrush">powerful, permanent upgrades</b>.
+
+                Are you sure you want to do this?
+                """,
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question
             );
@@ -420,6 +407,38 @@ namespace CircleClicker.UI.Windows
                 Save.ManualCircles = 0;
                 Save.TotalTriangles = 0;
                 Main.IsAutosavingEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Called when the Show Leaderboards button is clicked.
+        /// </summary>
+        private void btn_leaderboards_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LeaderboardWindow window = new() { Owner = this };
+                window.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxEx.Show(
+                    "Something went wrong while trying to fetch the leaderboards.",
+                    icon: MessageBoxImage.Error,
+                    exception: ex
+                );
+            }
+        }
+
+        /// <summary>
+        /// Called when the Open Admin Panel button is clicked.
+        /// </summary>
+        private void btn_admin_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsAdmin)
+            {
+                AdminWindow adminWindow = new() { Owner = this };
+                adminWindow.ShowDialog();
             }
         }
 

@@ -8,10 +8,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Resources\Icon.ico</ApplicationIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    
+    <ProductName>Circle Clicker</ProductName>
     <Authors>f78</Authors>
-    <AssemblyTitle>Circle Clicker</AssemblyTitle>
-    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

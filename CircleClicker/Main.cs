@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 
 namespace CircleClicker
 {
-    public class Main : NotifyPropertyChanged
+    public class Main : Observable
     {
         #region Constants
         private Main() { }
@@ -75,8 +75,8 @@ namespace CircleClicker
         /// <summary>
         /// Disables some methods. Can be used to temporarily improve performance or to prevent saving during critical operations.<br />
         /// <br />
-        /// If <see langword="true"/>, <see cref="Tick"/>, <see cref="SaveAsync"/> and <see cref="NotifyPropertyChanged.InvokePropertyChanged"/> can be called.<br/>
-        /// If <see langword="null"/>, only <see cref="NotifyPropertyChanged.InvokePropertyChanged"/> can be called.<br />
+        /// If <see langword="true"/>, <see cref="Tick"/>, <see cref="SaveAsync"/> and <see cref="Observable.NotifyPropertyChanged"/> can be called.<br/>
+        /// If <see langword="null"/>, only <see cref="Observable.NotifyPropertyChanged"/> can be called.<br />
         /// If <see langword="false"/>, none of the above can be called.
         /// </summary>
         public bool? IsAutosavingEnabled { get; set; } = true;
@@ -150,7 +150,7 @@ namespace CircleClicker
             // This will update various things in MainWindow
             foreach (Building building in Buildings)
             {
-                building.InvokePropertyChanged(
+                building.NotifyPropertyChanged(
                     nameof(building.IsUnlocked),
                     nameof(building.CanAfford),
                     nameof(building.CostText)
@@ -159,7 +159,7 @@ namespace CircleClicker
 
             foreach (Upgrade upgrade in Upgrades)
             {
-                upgrade.InvokePropertyChanged(
+                upgrade.NotifyPropertyChanged(
                     nameof(upgrade.IsUnlocked),
                     nameof(upgrade.CanAfford),
                     nameof(upgrade.CostText),
@@ -169,7 +169,7 @@ namespace CircleClicker
 
             foreach (Currency currency in Currency.Instances)
             {
-                currency.InvokePropertyChanged(nameof(currency.AffordableUpgrades));
+                currency.NotifyPropertyChanged(nameof(currency.AffordableUpgrades));
             }
 
             /*InvokePropertyChanged(
@@ -178,7 +178,7 @@ namespace CircleClicker
                 nameof(PendingSquaresText),
                 nameof(ReincarnateProgress)
             );*/
-            Currency.Squares.InvokePropertyChanged(
+            Currency.Squares.NotifyPropertyChanged(
                 nameof(Currency.Pending),
                 nameof(Currency.IsPending),
                 nameof(Currency.IsUnlocked)

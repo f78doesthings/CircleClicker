@@ -78,7 +78,7 @@ namespace CircleClicker.Models
     /// <summary>
     /// A game stat that can be affected by <see cref="Upgrade"/>s.
     /// </summary>
-    public class Stat : NotifyPropertyChanged, IStat
+    public class Stat : Observable, IStat
     {
         #region Instances
         public static readonly List<Stat> Instances = [];
@@ -92,7 +92,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(ProductionToCPC),
                 Name = "% of circles per second gained per click",
-                Description = "Clicking grants +{0}% of your circles per second.",
+                Description =
+                    """<font color="res:BrightAccentBrush">Clicking</font> grants +{0}% of your <font color="res:AccentBrush">circles per second</font>.""",
                 IsAdditive = true,
                 CustomFormula = v => v / 100
             };
@@ -106,7 +107,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(CirclesPerClick),
                 Name = "Base circles per click",
-                Description = "Gain x{0} base circles from clicking.",
+                Description =
+                    """Gain x{0} base <font color="res:AccentBrush">circles</font> from <font color="res:BrightAccentBrush">clicking</font>.""",
                 CustomFormula = v => v + Currency.Circles.Production * ProductionToCPC.Value
             };
 
@@ -118,7 +120,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(Production),
                 Name = "Building production multiplier",
-                Description = "Increases all building production by x{0}."
+                Description =
+                    """Increases all <font color="res:AccentBrush">building production</font> by x{0}."""
             };
 
         /// <summary>
@@ -129,7 +132,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(TrianglesPerClick),
                 Name = "Triangle multiplier",
-                Description = "Increases the <font color=\"res:TriangleBrush\">triangles</font> you earn from clicking by x{0}."
+                Description =
+                    """Increases the <font color="res:TriangleBrush">triangles</font> you earn from <font color="res:BrightAccentBrush">clicking</font> by x{0}."""
             };
 
         /// <summary>
@@ -141,7 +145,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(TriangleChance),
                 Name = "% chance to earn triangles per click",
-                Description = "Increases the chance to earn <font color=\"res:TriangleBrush\">triangles</font> from clicking by +{0}%.",
+                Description =
+                    """Increases the <font color="res:MidForegroundBrush">chance</font> to earn <font color="res:TriangleBrush">triangles</font> from <font color="res:BrightAccentBrush">clicking</font> by +{0}%.""",
                 DefaultBaseValue = 0.5,
                 IsAdditive = true,
                 CustomFormula = v => v / 100
@@ -155,7 +160,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(Squares),
                 Name = "Square multiplier",
-                Description = "Increases the <font color=\"res:SquareBrush\">squares</font> you earn from reincarnating by x{0}.",
+                Description =
+                    """Increases the <font color="res:SquareBrush">squares</font> you earn from <font color="res:BrightSquareBrush">reincarnating</font> by x{0}.""",
             };
 
         /// <summary>
@@ -167,7 +173,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(OfflineProduction),
                 Name = "% of circles per second gained while offline",
-                Description = "Gain +{0}% of your circles per second while offline.",
+                Description =
+                    """Gain +{0}% of your <font color="res:AccentBrush">circles per second</font> while <font color="res:SquareBrush">offline</font>.""",
                 DefaultBaseValue = 10,
                 IsAdditive = true,
                 CustomFormula = v => v / 100
@@ -181,7 +188,8 @@ namespace CircleClicker.Models
             {
                 StatId = nameof(MaxOfflineTime),
                 Name = "Maximum offline time (in hours)",
-                Description = "Increases how long you can produce circles while offline by {0} hour(s).",
+                Description =
+                    """Increases how long you can produce <font color="res:AccentBrush">circles</font> while <font color="res:SquareBrush">offline</font> by {0} hour(s).""",
                 DefaultBaseValue = 3,
                 IsAdditive = true,
             };

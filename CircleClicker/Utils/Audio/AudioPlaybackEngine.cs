@@ -10,7 +10,7 @@ namespace CircleClicker.Utils.Audio
     /// <summary>
     /// Handles audio playback.
     /// </summary>
-    public class AudioPlaybackEngine : NotifyPropertyChanged, IDisposable
+    public class AudioPlaybackEngine : Observable, IDisposable
     {
         /// <summary>
         /// The wave format that <see cref="AudioPlaybackEngine"/> will use.

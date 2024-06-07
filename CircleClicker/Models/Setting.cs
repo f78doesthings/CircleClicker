@@ -1,7 +1,7 @@
-﻿using CircleClicker.Models.Database;
+﻿using System.Numerics;
+using CircleClicker.Models.Database;
 using CircleClicker.Utils;
 using CircleClicker.Utils.Audio;
-using System.Numerics;
 
 namespace CircleClicker.Models
 {
@@ -32,7 +32,7 @@ namespace CircleClicker.Models
     /// The base class for settings.
     /// </summary>
     /// <typeparam name="T">The type of the setting.</typeparam>
-    public abstract class Setting<T> : NotifyPropertyChanged, ISetting
+    public abstract class Setting<T> : Observable, ISetting
         where T : struct
     {
         public required Func<User, T> Getter { private get; init; }

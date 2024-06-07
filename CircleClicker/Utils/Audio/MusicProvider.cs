@@ -1,14 +1,14 @@
-﻿using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace CircleClicker.Utils.Audio
 {
     // Adapted from https://markheath.net/post/looped-playback-in-net-with-naudio
     // and https://github.com/naudio/NAudio/blob/master/NAudio.Extras/LoopStream.cs
-    public class MusicProvider : NotifyPropertyChanged, ISampleProvider, IDisposable
+    public class MusicProvider : Observable, ISampleProvider, IDisposable
     {
         /// <summary>
         /// Raised when none of the files of a <see cref="MusicProvider"/> can be opened for playback.
@@ -155,7 +155,7 @@ namespace CircleClicker.Utils.Audio
                     );
                 _provider = new VolumeSampleProvider(resampler) { Volume = _volume };
 
-                InvokePropertyChanged(nameof(CurrentFile));
+                NotifyPropertyChanged(nameof(CurrentFile));
             }
             catch (Exception ex)
             {

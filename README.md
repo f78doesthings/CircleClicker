@@ -1,10 +1,10 @@
 # ![Circle Clicker](/CircleClicker/Resources/Logo.png)
 
-A customizable clicker game inspired by [Cookie Clicker](https://orteil.dashnet.org/cookieclicker/), made with WPF.
+A customisable clicker game inspired by [Cookie Clicker](https://orteil.dashnet.org/cookieclicker/), made with WPF and .NET 8.
 
 This is a school project of mine that I ended up spending a lot of my free time on, making it much bigger than I had anticipated.
 
-If I decide to continue this project after my course ends on 7 June 2024, I will probably make a version of Circle Clicker that is cross-platform and won't require a MySQL database.
+*If* I decide to continue this project after my course ends on 7 June 2024, I will probably make a version of Circle Clicker that is cross-platform and won't require a MySQL database. **No guarantees here.**
 
 ## Saving
 
@@ -12,8 +12,8 @@ Circle Clicker currently uses MySQL to save user data, buildings, upgrades and g
 (This is because using a database is required for the school project.)
 
 > [!IMPORTANT]
-> If you want to enable saving, you should install [XAMPP](https://www.apachefriends.org/index.html) and use its MySQL server.
-> Circle Clicker will create a database for you if it doesn't exist.
+> If you want to enable saving, you should install [XAMPP](https://www.apachefriends.org/index.html) and use its bundled MySQL server.
+> Circle Clicker will automatically create a database for you on startup if it doesn't exist.
 
 ## Tips
 

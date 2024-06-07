@@ -1,5 +1,4 @@
-﻿using CircleClicker.Utils;
-using System.Collections;
+﻿using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Media;
@@ -10,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CircleClicker.Utils;
 
 namespace CircleClicker.UI.Windows
 {
@@ -197,6 +197,9 @@ namespace CircleClicker.UI.Windows
 
         private bool _areButtonsEnabled;
 
+        /// <summary>
+        /// Whether the buttons on the message box should be enabled.
+        /// </summary>
         public bool AreButtonsEnabled
         {
             get => _areButtonsEnabled;
@@ -208,9 +211,23 @@ namespace CircleClicker.UI.Windows
         }
 
         /// <summary>
+        /// Whether the text box should be shown.
+        /// </summary>
+        public bool TextBoxEnabled
+        {
+            get => tbx_input.Visibility == Visibility.Visible;
+            set => tbx_input.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        /// <summary>
         /// The button that was clicked, or <see langword="null"/> if the message box was closed without clicking a button.
         /// </summary>
         public Button? ClickedButton { get; private set; }
+
+        /// <summary>
+        /// The text the user entered into the input box.
+        /// </summary>
+        public string InputText => tbx_input.Text;
 
         public MessageBoxEx(IEnumerable<Button>? buttons = null)
         {
@@ -219,6 +236,7 @@ namespace CircleClicker.UI.Windows
             Progress = -2;
             Exception = null;
             AreButtonsEnabled = true;
+            TextBoxEnabled = false;
 
             img_copy.Source = Icons.CopySmall;
             wp_buttons.Children.Clear();
@@ -268,6 +286,68 @@ namespace CircleClicker.UI.Windows
             MessageBoxButton button = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None,
             Exception? exception = null
+        )
+        {
+            var (messageBox, buttons) = Create(owner, message, button, icon, exception);
+            return messageBox.GetDialogResult(buttons);
+        }
+
+        /// <inheritdoc cref="Ask(Window?, string, MessageBoxImage, Exception?)"/>
+        public static string? Ask(
+            string message,
+            MessageBoxImage icon = MessageBoxImage.None,
+            Exception? exception = null
+        )
+        {
+            return Ask(null, message, icon, exception);
+        }
+
+        /// <summary>
+        /// Shows a message box with a message, text box and an optional icon and exception.
+        /// </summary>
+        /// <returns>
+        /// The text the user entered, or <see langword="null"/> if the user didn't click OK.
+        /// </returns>
+        public static string? Ask(
+            Window? owner,
+            string message,
+            MessageBoxImage icon = MessageBoxImage.None,
+            Exception? exception = null
+        )
+        {
+            var (messageBox, buttons) = Create(
+                owner,
+                message,
+                MessageBoxButton.OKCancel,
+                icon,
+                exception
+            );
+            messageBox.TextBoxEnabled = true;
+            var result = messageBox.GetDialogResult(buttons);
+            return result == MessageBoxResult.OK ? messageBox.InputText : null;
+        }
+
+        private MessageBoxResult GetDialogResult(Dictionary<Button, MessageBoxResult> buttons)
+        {
+            Cursor prevCursor = Mouse.OverrideCursor;
+            Mouse.OverrideCursor = null;
+            ShowDialog();
+            Mouse.OverrideCursor = prevCursor;
+
+            return ClickedButton != null
+                ? buttons.GetValueOrDefault(ClickedButton)
+                : MessageBoxResult.None;
+        }
+
+        private static (
+            MessageBoxEx messageBox,
+            Dictionary<Button, MessageBoxResult> buttons
+        ) Create(
+            Window? owner,
+            string message,
+            MessageBoxButton button,
+            MessageBoxImage icon,
+            Exception? exception
         )
         {
             Dictionary<Button, MessageBoxResult> buttons = [];
@@ -325,15 +405,7 @@ namespace CircleClicker.UI.Windows
                     break;
             }
 
-            var prevCursor = Mouse.OverrideCursor;
-            Mouse.OverrideCursor = null;
-
-            messageBox.ShowDialog();
-            Mouse.OverrideCursor = prevCursor;
-
-            return messageBox.ClickedButton != null
-                ? buttons.GetValueOrDefault(messageBox.ClickedButton)
-                : MessageBoxResult.None;
+            return (messageBox, buttons);
         }
 
         private void Copy_Click(object sender, RoutedEventArgs e)

@@ -1,5 +1,8 @@
 ﻿namespace CircleClicker.Models.Database;
 
+/// <summary>
+/// A purchase that produces circles over time.
+/// </summary>
 public class Building : Purchase, IStat
 {
     #region Model
@@ -16,7 +19,7 @@ public class Building : Purchase, IStat
         {
             _baseProduction = value;
             OnPropertyChanged([nameof(Value), nameof(Production)]);
-            Models.Currency.Circles.InvokePropertyChanged(
+            Models.Currency.Circles.NotifyPropertyChanged(
                 nameof(Models.Currency.Production),
                 nameof(Models.Currency.IsProduced)
             );
@@ -25,7 +28,8 @@ public class Building : Purchase, IStat
     #endregion
 
     #region Values for CurrentSave
-    public override string Description => $"Base: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Value, "R+")}/s</font> | Total: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Production, "R+")}/s</font>";
+    public override string Description =>
+        $"Base: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Value, "R+")}/s</font> | Total: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Production, "R+")}/s</font> ({(Production / Models.Currency.Circles.Production).ToString("P2", App.Culture)})";
 
     public override int Amount
     {
@@ -33,8 +37,8 @@ public class Building : Purchase, IStat
         set
         {
             base.Amount = value;
-            InvokePropertyChanged(nameof(Production));
-            Models.Currency.Circles.InvokePropertyChanged(
+            NotifyPropertyChanged(nameof(Production));
+            Models.Currency.Circles.NotifyPropertyChanged(
                 nameof(Models.Currency.Production),
                 nameof(Models.Currency.IsProduced)
             );
@@ -54,7 +58,8 @@ public class Building : Purchase, IStat
 
     string IStat.StatId => DependencyId;
 
-    string IStat.Description => $"{Name} production is increased by x{{0}}.";
+    string IStat.Description =>
+        $"<font color=\"res:MidForegroundBrush\">{Name}</font> <font color=\"res:AccentBrush\">production</font> is increased by x{{0}}.";
 
     double IStat.BaseValue => BaseProduction;
 

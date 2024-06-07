@@ -7,7 +7,7 @@ namespace CircleClicker.UI.Controls
     /// <summary>
     /// The base class for number boxes.
     /// </summary>
-    public abstract partial class NumericEntryControl : UserControl//, INotifyPropertyChanged
+    public abstract partial class NumericEntryControl : UserControl
     {
         public NumericEntryControl()
         {
@@ -18,20 +18,6 @@ namespace CircleClicker.UI.Controls
         protected abstract void tb_GotFocus(object sender, RoutedEventArgs e);
         protected abstract void tb_LostFocus(object sender, RoutedEventArgs e);
 #pragma warning restore IDE1006 // Naming Styles
-
-        #region INotifyPropertyChanged implementation
-        //public event PropertyChangedEventHandler? PropertyChanged;
-
-        //public void NotifyPropertyChanged(
-        //    params string[] propNames
-        //)
-        //{
-        //    foreach (string prop in propNames)
-        //    {
-        //        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-        //    }
-        //}
-        #endregion
     }
 
     /// <summary>
@@ -83,7 +69,10 @@ namespace CircleClicker.UI.Controls
         }
         #endregion
 
-        protected static void OnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        protected static void OnPropertyChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
         {
             if (d is not NumericEntryControl<T> numericEntryControl)
             {
@@ -93,7 +82,11 @@ namespace CircleClicker.UI.Controls
             if (e.Property == ValueProperty)
             {
                 T newValue = (T)e.NewValue;
-                T clampedValue = T.Clamp(newValue, numericEntryControl.Minimum, numericEntryControl.Maximum);
+                T clampedValue = T.Clamp(
+                    newValue,
+                    numericEntryControl.Minimum,
+                    numericEntryControl.Maximum
+                );
                 if (clampedValue != newValue)
                 {
                     numericEntryControl.Value = clampedValue;
@@ -103,7 +96,11 @@ namespace CircleClicker.UI.Controls
             }
             else if (e.Property == MinimumProperty || e.Property == MaximumProperty)
             {
-                numericEntryControl.Value = T.Clamp(numericEntryControl.Value, numericEntryControl.Minimum, numericEntryControl.Maximum);
+                numericEntryControl.Value = T.Clamp(
+                    numericEntryControl.Value,
+                    numericEntryControl.Minimum,
+                    numericEntryControl.Maximum
+                );
             }
         }
 

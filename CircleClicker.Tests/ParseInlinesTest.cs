@@ -1,5 +1,4 @@
 ﻿using CircleClicker.Utils;
-using System.Text.RegularExpressions;
 using Xunit.Abstractions;
 
 namespace CircleClicker.Tests
@@ -13,25 +12,9 @@ namespace CircleClicker.Tests
         )]
         public void TestReplaceElements(string input, string expectedResult)
         {
-            output.WriteLine("Matches:");
-            foreach (object? item in Helpers.Internal.ElementRegex().Matches(input))
-            {
-                if (item is Match match)
-                {
-                    output.WriteLine($"- {item}");
-                    foreach (object? groupItem in match.Groups)
-                    {
-                        if (groupItem is Group group && group.Name != "0")
-                        {
-                            output.WriteLine(
-                                $"  - {group.Name}:\n    - {string.Join("\n    - ", group.Captures)}"
-                            );
-                        }
-                    }
-                }
-            }
+            output.PrintRegexMatches(Helpers.Internal.ElementRegex(), input);
 
-            var result = Helpers.Internal.ReplaceElements(input);
+            string result = Helpers.Internal.ReplaceElements(input);
             Assert.Equal(expectedResult, result);
         }
     }

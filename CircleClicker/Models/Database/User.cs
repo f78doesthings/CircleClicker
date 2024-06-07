@@ -1,11 +1,14 @@
-﻿using CircleClicker.UI.Windows;
-using CircleClicker.Utils.Audio;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
+using CircleClicker.UI.Windows;
+using CircleClicker.Utils.Audio;
 using BC = BCrypt.Net.BCrypt;
 
 namespace CircleClicker.Models.Database;
 
+/// <summary>
+/// Represents a registered user.
+/// </summary>
 public partial class User
 {
     private float _musicVolume = Settings.MusicVolume.DefaultValue;
@@ -106,12 +109,16 @@ public partial class User
         {
             try
             {
-                User user = new()
-                {
-                    Name = username,
-                    Password = BC.HashPassword(password),
-                    IsAdmin = username.Equals("admin", StringComparison.InvariantCultureIgnoreCase),
-                };
+                User user =
+                    new()
+                    {
+                        Name = username,
+                        Password = BC.HashPassword(password),
+                        IsAdmin = username.Equals(
+                            "admin",
+                            StringComparison.InvariantCultureIgnoreCase
+                        ),
+                    };
 
                 Main.Instance.DB.Users.Add(user);
                 Main.Instance.DB.SaveChanges();
@@ -119,7 +126,12 @@ public partial class User
             }
             catch (Exception ex)
             {
-                MessageBoxEx.Show("Something went wrong while trying to create a user.", MessageBoxButton.OK, MessageBoxImage.Error, ex);
+                MessageBoxEx.Show(
+                    "Something went wrong while trying to create a user.",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    ex
+                );
                 errorMessage = "Something went wrong. Please try again later.";
             }
         }

@@ -1,5 +1,8 @@
 ﻿namespace CircleClicker.Models.Database;
 
+/// <summary>
+/// Represents an amount of a <see cref="Database.Purchase"/> owned in a <see cref="Database.Save"/>.
+/// </summary>
 public partial class OwnedPurchase
 {
     public int Id { get; set; }

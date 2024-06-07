@@ -1,7 +1,9 @@
-﻿using CircleClicker.Models.Database;
-using Microsoft.EntityFrameworkCore;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using CircleClicker.Models.Database;
+using CircleClicker.Utils;
+using Microsoft.EntityFrameworkCore;
 using BC = BCrypt.Net.BCrypt;
 
 namespace CircleClicker.UI.Windows
@@ -37,13 +39,26 @@ namespace CircleClicker.UI.Windows
             }
             else if (user.IsBanned)
             {
-                tb_error.Content =
-                    $"""
-                    This account has been banned.
+                string? reason = user.BanReason;
+                if (reason is null or "")
+                {
+                    reason = "No reason given.";
+                }
 
-                    Reason: {user.BanReason ?? "No reason given."}
-                    Expires: {user.BannedUntil:g} (in {(DateTime.Now - user.BannedUntil!.Value).ToString(@"d'd 'h'h 'm'm 's's'", App.Culture)})
-                    """;
+                TextBlock tb = new();
+                tb.Inlines.AddRange(
+                    Helpers.ParseInlines(
+                        $"""
+                        This account has been banned.
+
+                        <b>Reason:</b> {reason}
+                        <b>Expires:</b> {user.BannedUntil:g} <i>(in {(
+                            DateTime.Now - user.BannedUntil!.Value
+                        ).PrettyPrint()})</i>
+                        """
+                    )
+                );
+                tb_error.Content = tb;
                 tb_error.Visibility = Visibility.Visible;
             }
             else

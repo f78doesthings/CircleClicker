@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.Windows;
 using System.Windows.Input;
-using BC = BCrypt.Net.BCrypt;
 
 namespace CircleClicker.UI.Windows
 {

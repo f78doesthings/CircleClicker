@@ -10,7 +10,7 @@
     ResizeMode="NoResize"
     SizeToContent="WidthAndHeight"
     Style="{StaticResource WindowStyle}"
-    WindowStartupLocation="CenterScreen"
+    WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
@@ -18,6 +18,7 @@
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -98,9 +99,15 @@
             IsIndeterminate="True"
             Value="50" />
 
+        <TextBox
+            Name="tbx_input"
+            Grid.Row="4"
+            Grid.Column="1"
+            Margin="0,12,0,4" />
+
         <WrapPanel
             Name="wp_buttons"
-            Grid.Row="4"
+            Grid.Row="5"
             Grid.ColumnSpan="2"
             Margin="0,12,0,0"
             HorizontalAlignment="Right">

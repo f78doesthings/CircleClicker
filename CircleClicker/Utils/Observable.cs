@@ -3,8 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace CircleClicker.Utils
 {
+    // I really should've used MVVM Toolkit for this...
     /// <inheritdoc cref="INotifyPropertyChanged" />
-    public class NotifyPropertyChanged : INotifyPropertyChanged
+    public abstract class Observable : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -22,13 +23,13 @@ namespace CircleClicker.Utils
                 propNames = [propName, .. propNames];
             }
 
-            InvokePropertyChanged(propNames.ToArray());
+            NotifyPropertyChanged(propNames.ToArray());
         }
 
         /// <summary>
         /// Fires the <see cref="PropertyChanged"/> event with each property name passed.
         /// </summary>
-        internal virtual void InvokePropertyChanged(params string[] propNames)
+        internal virtual void NotifyPropertyChanged(params string[] propNames)
         {
             if (Main.Instance.IsAutosavingEnabled == false)
             {

@@ -2,12 +2,12 @@
     x:Class="CircleClicker.UI.Windows.AdminWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:CircleClicker.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:db="clr-namespace:CircleClicker.Models.Database"
-    xmlns:globalization="clr-namespace:System.Globalization;assembly=System.Runtime"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="clr-namespace:CircleClicker.UI.Controls"
+    xmlns:db="clr-namespace:CircleClicker.Models.Database"
     xmlns:models="clr-namespace:CircleClicker.Models"
+    xmlns:sg="clr-namespace:System.Globalization;assembly=System.Runtime"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:windows="clr-namespace:CircleClicker.UI.Windows"
     Title="Admin Panel - Circle Clicker"
@@ -16,7 +16,7 @@
     d:DataContext="{d:DesignInstance windows:AdminWindow}"
     Closing="Window_Closing"
     Style="{StaticResource WindowStyle}"
-    WindowStartupLocation="CenterScreen"
+    WindowStartupLocation="CenterOwner"
     WindowState="Maximized"
     mc:Ignorable="d">
     <Window.Resources>
@@ -126,13 +126,16 @@
                         <ColumnDefinition Width="320" />
                     </Grid.ColumnDefinitions>
 
+                    <!--  Once again, a ListView with a GridView would be more appropriate for this, but I still can't be bothered to style that  -->
                     <DataGrid
                         Name="dg_users"
                         AutoGenerateColumns="False"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         IsReadOnly="True"
-                        RowHeaderTemplate="{StaticResource IdRowTemplate}">
+                        RowHeaderTemplate="{StaticResource IdRowTemplate}"
+                        SelectionChanged="dg_users_SelectionChanged"
+                        SelectionMode="Single">
 
                         <d:DataGrid.ItemsSource>
                             <x:Array Type="db:User">
@@ -143,7 +146,7 @@
                         </d:DataGrid.ItemsSource>
                         <DataGrid.Columns>
                             <DataGridTextColumn
-                                Width="*"
+                                Width="250"
                                 Binding="{Binding Name}"
                                 Header="Username" />
                             <DataGridCheckBoxColumn
@@ -152,12 +155,16 @@
                                 Header="Admin" />
                             <DataGridTextColumn
                                 Width="150"
-                                Binding="{Binding BannedUntil, StringFormat={}{0:g}, ConverterCulture={x:Static globalization:CultureInfo.CurrentCulture}}"
+                                Binding="{Binding BannedUntil, StringFormat={}{0:g}, ConverterCulture={x:Static sg:CultureInfo.CurrentCulture}}"
                                 Header="Banned Until" />
+                            <DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding BanReason}"
+                                Header="Ban Reason" />
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                    <StackPanel Grid.Column="1" Margin="15,0,10,0">
                         <Label>Username</Label>
                         <TextBox Name="tbx_username" />
 
@@ -168,13 +175,26 @@
                         <Button
                             Name="btn_updateUser"
                             Click="btn_updateUser_Click"
-                            IsEnabled="{Binding IsUserSelected}">
+                            IsEnabled="False">
                             Update Selected User
                         </Button>
                         <Button
+                            Name="btn_wipeUser"
+                            Click="btn_wipeUser_Click"
+                            IsEnabled="False">
+                            Delete Saves of Selected User
+                        </Button>
+
+                        <Label Margin="0,4,0,0">Ban Reason</Label>
+                        <TextBox Name="tbx_banReason" AcceptsReturn="True" />
+
+                        <Label>Ban Duration (set to 0s to unban)</Label>
+                        <TextBox Name="tbx_banDuration" />
+
+                        <Button
                             Name="btn_banUser"
                             Click="btn_banUser_Click"
-                            IsEnabled="{Binding IsUserSelected}">
+                            IsEnabled="False">
                             Ban Selected User
                         </Button>
                     </StackPanel>

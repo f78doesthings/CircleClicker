@@ -20,6 +20,7 @@
         <Color x:Key="BorderColor">#55575e</Color>
         <Color x:Key="BrightBorderColor">#83858c</Color>
         <Color x:Key="DimForegroundColor">#66fffcf9</Color>
+        <Color x:Key="MidForegroundColor">#aafffcf9</Color>
         <Color x:Key="ForegroundColor">#fffcf9</Color>
         <Color x:Key="DarkSquareColor">#2424b2</Color>
         <Color x:Key="SquareColor">#9c2feb</Color>
@@ -35,11 +36,16 @@
         <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
         <SolidColorBrush x:Key="BrightBorderBrush" Color="{StaticResource BrightBorderColor}" />
         <SolidColorBrush x:Key="DimForegroundBrush" Color="{StaticResource DimForegroundColor}" />
+        <SolidColorBrush x:Key="MidForegroundBrush" Color="{StaticResource MidForegroundColor}" />
         <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}" />
 
         <LinearGradientBrush x:Key="SquareBrush" StartPoint="0,1" EndPoint="0,0">
             <GradientStop Color="{StaticResource DarkSquareColor}" />
             <GradientStop Offset="1" Color="{StaticResource SquareColor}" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="BrightSquareBrush" StartPoint="0,1" EndPoint="0,0">
+            <GradientStop Color="{StaticResource SquareColor}" />
+            <GradientStop Offset="1" Color="{StaticResource BrightSquareColor}" />
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="TriangleBrush" StartPoint="0,1" EndPoint="0,0">
             <GradientStop Color="{StaticResource DarkTriangleColor}" />

@@ -1,11 +1,11 @@
-﻿using CircleClicker.Utils;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 
 /// <summary>
-/// A purchase that can currently boost a single <see cref="IStat"/>.
+/// A purchase that can boost a single <see cref="IStat"/>.
 /// </summary>
 public partial class Upgrade : Purchase
 {
@@ -65,27 +65,30 @@ public partial class Upgrade : Purchase
     {
         get
         {
-            if (DesignDescription != null) return DesignDescription;
+            if (DesignDescription != null)
+                return DesignDescription;
 
             string effectPart;
             if (Amount == 0)
             {
-                effectPart = $"<font color=\"res:ForegroundBrush\">{GetEffect(Amount + ClampedBulkBuy).FormatSuffixes()}</font>";
+                effectPart =
+                    $"<font color=\"res:ForegroundBrush\">{GetEffect(Amount + ClampedBulkBuy).FormatSuffixes()}</font>";
             }
-            else if ((MaxAmount > 0 && Amount == MaxAmount && ClampedBulkBuy > 0) || ClampedBulkBuy == 0)
+            else if (
+                (MaxAmount > 0 && Amount == MaxAmount && ClampedBulkBuy > 0)
+                || ClampedBulkBuy == 0
+            )
             {
-                effectPart = $"<font color=\"res:ForegroundBrush\">{Effect.FormatSuffixes()}</font>";
+                effectPart =
+                    $"<font color=\"res:ForegroundBrush\">{Effect.FormatSuffixes()}</font>";
             }
             else
             {
-                effectPart = $"{Effect.FormatSuffixes()} ➝ <font color=\"res:ForegroundBrush\">{GetEffect(Amount + ClampedBulkBuy).FormatSuffixes()}</font>";
+                effectPart =
+                    $"{Effect.FormatSuffixes()} ➝ <font color=\"res:ForegroundBrush\">{GetEffect(Amount + ClampedBulkBuy).FormatSuffixes()}</font>";
             }
 
-            return string.Format(
-                App.Culture,
-                Affects?.Description ?? "",
-                effectPart
-            );
+            return string.Format(App.Culture, Affects?.Description ?? "", effectPart);
         }
     }
     #endregion
@@ -99,13 +102,13 @@ public partial class Upgrade : Purchase
         set
         {
             base.Amount = value;
-            InvokePropertyChanged(nameof(IsPurchased), nameof(Effect), nameof(Description));
+            NotifyPropertyChanged(nameof(IsPurchased), nameof(Effect), nameof(Description));
             if (Affects == Stat.Production || Affects is Building)
             {
-                Models.Currency.Circles.InvokePropertyChanged(nameof(Models.Currency.Production));
+                Models.Currency.Circles.NotifyPropertyChanged(nameof(Models.Currency.Production));
                 foreach (Building building in Main.Instance.Buildings)
                 {
-                    building.InvokePropertyChanged(
+                    building.NotifyPropertyChanged(
                         nameof(Building.Value),
                         nameof(Building.Production)
                     );

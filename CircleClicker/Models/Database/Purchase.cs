@@ -1,13 +1,13 @@
-﻿using CircleClicker.Utils;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 
 /// <summary>
 /// The base class for something that can be purchased.
 /// </summary>
-public abstract partial class Purchase : NotifyPropertyChanged, IDependency
+public abstract partial class Purchase : Observable, IDependency
 {
     #region Model
     private string _name = "";
@@ -175,7 +175,8 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
         }
     }
 
-    public string CostText => $"Buy x{ClampedBulkBuy.ToString("N0", App.Culture)} for {Currency?.Format(Cost, "R-")}";
+    public string CostText =>
+        $"Buy x{ClampedBulkBuy.ToString("N0", App.Culture)} for {Currency?.Format(Cost, "R-")}";
     #endregion
 
     #region Values for CurrentSave
@@ -194,13 +195,19 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
     /// </summary>
     public virtual bool IsUnlocked =>
         Currency != null
-        && (((MaxAmount <= 0 || Amount < MaxAmount)
-        && (Requires == null || Requires.Value >= Requirement)) || ClampedBulkBuy < 0);
+        && (
+            (
+                (MaxAmount <= 0 || Amount < MaxAmount)
+                && (Requires == null || Requires.Value >= Requirement)
+            )
+            || ClampedBulkBuy < 0
+        );
 
     /// <summary>
     /// Whether this purchase can currently be afforded.
     /// </summary>
-    public bool CanAfford => IsUnlocked && ((Currency?.Value >= Cost && ClampedBulkBuy != 0) || ClampedBulkBuy < 0);
+    public bool CanAfford =>
+        IsUnlocked && ((Currency?.Value >= Cost && ClampedBulkBuy != 0) || ClampedBulkBuy < 0);
 
     /// <summary>
     /// Clamps <see cref="User.BulkBuy"/> for this purchase.
@@ -327,6 +334,14 @@ public abstract partial class Purchase : NotifyPropertyChanged, IDependency
                     nameof(Description),
                 ]
             );
+
+            foreach (Building building in Main.Instance.Buildings)
+            {
+                if (building != this)
+                {
+                    building.NotifyPropertyChanged(nameof(Description));
+                }
+            }
         }
     }
 

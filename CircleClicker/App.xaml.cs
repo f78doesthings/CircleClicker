@@ -17,7 +17,7 @@ namespace CircleClicker
     {
         public const string ErrorCategory = "Error";
 
-        public static readonly CultureInfo Culture = CultureInfo.GetCultureInfo("en-US");
+        public static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
 
         private static Main Main_ => CircleClicker.Main.Instance;
 
@@ -46,13 +46,14 @@ namespace CircleClicker
                 {
                     Message = "Loading...",
                     Progress = -1,
-                    ShowLogo = true
+                    ShowLogo = true,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen
                 };
             progressBox.Show();
 
             Mouse.OverrideCursor = Cursors.Wait;
 
-            // Preload sounds and initialize static fields
+            // Preload sounds and initialise static fields
             foreach (Stat instance in Stat.Instances)
             {
                 instance.Register();
@@ -89,7 +90,7 @@ namespace CircleClicker
                 try
                 {
                     // Create the database if it does not already exist
-                    await RecreateDatabase();
+                    await CreateDatabase();
                 }
                 catch (Exception ex)
                 {
@@ -179,9 +180,9 @@ namespace CircleClicker
             }
         }
 
-        private static async Task RecreateDatabase(bool delete = false)
+        private static async Task CreateDatabase(bool deleteFirst = false)
         {
-            if (delete)
+            if (deleteFirst)
             {
                 await Main_.DB.Database.EnsureDeletedAsync();
             }
@@ -235,10 +236,14 @@ namespace CircleClicker
             switch (result)
             {
                 case MessageBoxResult.Yes:
-                    result = MessageBoxEx.Show("Are you sure you want to <font color=\"res:AccentBrush\">delete</font> the database? <b>There is no way back!</b>", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    result = MessageBoxEx.Show(
+                        "Are you sure you want to <b color=\"res:AccentBrush\">delete</b> the database? <b>There is no way back!</b>",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning
+                    );
                     if (result == MessageBoxResult.Yes)
                     {
-                        _ = RecreateDatabase(true);
+                        _ = CreateDatabase(true);
                     }
                     break;
                 case MessageBoxResult.No:

@@ -1,5 +1,4 @@
-﻿using CircleClicker.Utils.Converters;
-using System.Collections;
+﻿using System.Collections;
 using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
@@ -11,6 +10,7 @@ using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using CircleClicker.Utils.Converters;
 
 namespace CircleClicker.Utils
 {
@@ -28,7 +28,7 @@ namespace CircleClicker.Utils
         public static partial class Internal
         {
             [GeneratedRegex(
-                """(?s)<(\/?)(?<tag>[\w\.\:]+)(?:\s+(?<name>[\w\.\:]+)\s*=\s*"?(?<value>[^"]*)"?)*\s*(\/?)>"""
+                """(?s)<(\/?)(?<tag>\w+\:?\w*)(?:\.\w+)?(?:\s+(?<name>[\w\.\:]+)\s*=\s*"?(?<value>[^"]*)"?)*\s*(\/?)>"""
             )]
             public static partial Regex ElementRegex();
 
@@ -37,6 +37,11 @@ namespace CircleClicker.Utils
 
             [GeneratedRegex("""res:(\w+)""")]
             public static partial Regex StaticResourceRegex();
+
+            [GeneratedRegex(
+                @"(?i)^(?:\s*(?<number>\d+)\s*(?<unit>d(ays?)?|h(?:(?:ou)?rs?)?|m(?:in(?:ute)?s?)?|s(?:ec(?:ond)?s?)?|m(?:illi)?s(?:ec(?:ond)?s?)?)\s*)+$"
+            )]
+            public static partial Regex TimeSpanRegex();
 
             public static string EvaluateElement(Match match)
             {
@@ -51,6 +56,7 @@ namespace CircleClicker.Utils
                         "span" or "font" => nameof(Span),
                         "br" => nameof(LineBreak),
                         "a" => nameof(Hyperlink),
+                        "div" => nameof(InlineUIContainer),
                         var other => other
                     };
 
@@ -77,7 +83,8 @@ namespace CircleClicker.Utils
                             };
 
                             // Replaces res:... with {StaticResource ...}
-                            string newValue = StaticResourceRegex().Replace(value.Value, "{StaticResource $1}");
+                            string newValue = StaticResourceRegex()
+                                .Replace(value.Value, "{StaticResource $1}");
                             if (newName == nameof(TextElement.FontWeight))
                             {
                                 newValue = newValue switch
@@ -170,6 +177,109 @@ namespace CircleClicker.Utils
                 ];
             }
         }
+
+        /// <summary>
+        /// Parses the given string as a time span. Throws on failure.
+        /// </summary>
+        public static TimeSpan ParseTimeSpan(string? input)
+        {
+            ArgumentNullException.ThrowIfNull(input, nameof(input));
+
+            try
+            {
+                var match = Internal.TimeSpanRegex().Match(input);
+                if (
+                    match.Groups.TryGetValue("number", out Group? numbers)
+                    && match.Groups.TryGetValue("unit", out Group? units)
+                )
+                {
+                    int days = 0;
+                    int hours = 0;
+                    int minutes = 0;
+                    int seconds = 0;
+                    int milliseconds = 0;
+                    foreach (
+                        (Capture numberCapture, Capture unit) in numbers.Captures.Zip(
+                            units.Captures
+                        )
+                    )
+                    {
+                        int number = int.Parse(numberCapture.Value);
+                        switch (unit.Value.ToLower())
+                        {
+                            case "d"
+                            or "day"
+                            or "days":
+                                days += number;
+                                break;
+                            case "h"
+                            or "hr"
+                            or "hrs"
+                            or "hour"
+                            or "hours":
+                                hours += number;
+                                break;
+                            case "m"
+                            or "min"
+                            or "mins"
+                            or "minute"
+                            or "minutes":
+                                minutes += number;
+                                break;
+                            case "s"
+                            or "sec"
+                            or "secs"
+                            or "second"
+                            or "seconds":
+                                seconds += number;
+                                break;
+                            case "ms"
+                            or "millis"
+                            or "msec"
+                            or "msecs"
+                            or "msecond"
+                            or "mseconds"
+                            or "millisec"
+                            or "millisecs"
+                            or "millisecond"
+                            or "milliseconds":
+                                milliseconds += number;
+                                break;
+                        }
+                    }
+
+                    return new TimeSpan(days, hours, minutes, seconds, milliseconds);
+                }
+
+                throw new ArgumentException(
+                    "The input text is not in a valid format for Helpers.ParseTimeSpan.",
+                    nameof(input)
+                );
+            }
+            catch (Exception inner)
+            {
+                try
+                {
+                    return TimeSpan.Parse(input, App.Culture);
+                }
+                catch (Exception ex)
+                {
+                    throw new AggregateException(
+                        "Could not parse the input text as a TimeSpan.",
+                        ex,
+                        inner
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the given time span in the format "<c>&lt;days&gt;</c>d <c>&lt;hours&gt;</c>h <c>&lt;minutes&gt;</c>m <c>&lt;seconds&gt;</c>s".
+        /// </summary>
+        public static string PrettyPrint(this TimeSpan timeSpan)
+        {
+            return timeSpan.ToString(@"d'd 'h'h 'm'm 's's'", App.Culture);
+        }
         #endregion
 
         #region Extensions
@@ -189,7 +299,7 @@ namespace CircleClicker.Utils
         /// <summary>
         /// Adds the elements of the given collection to the end of the <see cref="IList"/>.
         /// </summary>
-        public static void AddRange(this IList collection, IEnumerable elements)
+        public static void AddRange(this IList collection, params object[] elements)
         {
             foreach (object element in elements)
             {
@@ -201,7 +311,7 @@ namespace CircleClicker.Utils
         /// Adds the elements of the given collection to the end of the <see cref="ICollection{T}"/>.
         /// </summary>
         /// <exception cref="NotSupportedException">The <see cref="ICollection{T}"/> is read-only.</exception>
-        public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> elements)
+        public static void AddRange<T>(this ICollection<T> collection, params T[] elements)
         {
             foreach (T element in elements)
             {

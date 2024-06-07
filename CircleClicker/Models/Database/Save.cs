@@ -2,7 +2,10 @@
 
 namespace CircleClicker.Models.Database;
 
-public partial class Save : NotifyPropertyChanged
+/// <summary>
+/// Represents a save belonging to a <see cref="Database.User"/>.
+/// </summary>
+public partial class Save : Observable
 {
     public int Id { get; set; }
 
@@ -26,7 +29,7 @@ public partial class Save : NotifyPropertyChanged
 
             _circles = value;
             OnPropertyChanged();
-            Currency.Circles.InvokePropertyChanged(nameof(Currency.Value));
+            Currency.Circles.NotifyPropertyChanged(nameof(Currency.Value));
         }
     }
 
@@ -42,7 +45,7 @@ public partial class Save : NotifyPropertyChanged
         {
             _totalCircles = value;
             OnPropertyChanged();
-            ReadOnlyDependency.TotalCircles.InvokePropertyChanged(nameof(ReadOnlyDependency.Value));
+            ReadOnlyDependency.TotalCircles.NotifyPropertyChanged(nameof(ReadOnlyDependency.Value));
         }
     }
 
@@ -63,7 +66,7 @@ public partial class Save : NotifyPropertyChanged
 
             _manualCircles = value;
             OnPropertyChanged();
-            ReadOnlyDependency.ManualCircles.InvokePropertyChanged(
+            ReadOnlyDependency.ManualCircles.NotifyPropertyChanged(
                 nameof(ReadOnlyDependency.Value)
             );
         }
@@ -81,7 +84,7 @@ public partial class Save : NotifyPropertyChanged
         {
             _lifetimeCircles = value;
             OnPropertyChanged();
-            ReadOnlyDependency.LifetimeCircles.InvokePropertyChanged(
+            ReadOnlyDependency.LifetimeCircles.NotifyPropertyChanged(
                 nameof(ReadOnlyDependency.Value)
             );
         }
@@ -99,7 +102,7 @@ public partial class Save : NotifyPropertyChanged
         {
             _lifetimeManualCircles = value;
             OnPropertyChanged();
-            ReadOnlyDependency.LifetimeManualCircles.InvokePropertyChanged(
+            ReadOnlyDependency.LifetimeManualCircles.NotifyPropertyChanged(
                 nameof(ReadOnlyDependency.Value)
             );
         }
@@ -123,7 +126,7 @@ public partial class Save : NotifyPropertyChanged
 
             _triangles = value;
             OnPropertyChanged();
-            Currency.Triangles.InvokePropertyChanged(nameof(Currency.Value));
+            Currency.Triangles.NotifyPropertyChanged(nameof(Currency.Value));
         }
     }
 
@@ -139,7 +142,7 @@ public partial class Save : NotifyPropertyChanged
         {
             _totalTriangles = value;
             OnPropertyChanged();
-            ReadOnlyDependency.TotalTriangles.InvokePropertyChanged(
+            ReadOnlyDependency.TotalTriangles.NotifyPropertyChanged(
                 nameof(ReadOnlyDependency.Value)
             );
         }
@@ -157,10 +160,10 @@ public partial class Save : NotifyPropertyChanged
         {
             _lifetimeTriangles = value;
             OnPropertyChanged();
-            ReadOnlyDependency.TotalTriangles.InvokePropertyChanged(
+            ReadOnlyDependency.TotalTriangles.NotifyPropertyChanged(
                 nameof(ReadOnlyDependency.Value)
             );
-            Currency.Triangles.InvokePropertyChanged(nameof(Currency.IsUnlocked));
+            Currency.Triangles.NotifyPropertyChanged(nameof(Currency.IsUnlocked));
         }
     }
 
@@ -181,7 +184,7 @@ public partial class Save : NotifyPropertyChanged
 
             _squares = value;
             OnPropertyChanged();
-            Currency.Squares.InvokePropertyChanged(nameof(Currency.Value));
+            Currency.Squares.NotifyPropertyChanged(nameof(Currency.Value));
         }
     }
 
@@ -197,10 +200,10 @@ public partial class Save : NotifyPropertyChanged
         {
             _lifetimeSquares = value;
             OnPropertyChanged();
-            ReadOnlyDependency.LifetimeSquares.InvokePropertyChanged(
+            ReadOnlyDependency.LifetimeSquares.NotifyPropertyChanged(
                 nameof(ReadOnlyDependency.Value)
             );
-            Currency.Squares.InvokePropertyChanged(nameof(Currency.IsUnlocked));
+            Currency.Squares.NotifyPropertyChanged(nameof(Currency.IsUnlocked));
         }
     }
 
@@ -221,7 +224,7 @@ public partial class Save : NotifyPropertyChanged
 
             _clicks = value;
             OnPropertyChanged();
-            ReadOnlyDependency.Clicks.InvokePropertyChanged(nameof(ReadOnlyDependency.Value));
+            ReadOnlyDependency.Clicks.NotifyPropertyChanged(nameof(ReadOnlyDependency.Value));
         }
     }
 
@@ -242,7 +245,7 @@ public partial class Save : NotifyPropertyChanged
 
             _triangleClicks = value;
             OnPropertyChanged();
-            ReadOnlyDependency.TriangleClicks.InvokePropertyChanged(
+            ReadOnlyDependency.TriangleClicks.NotifyPropertyChanged(
                 nameof(ReadOnlyDependency.Value)
             );
         }
@@ -260,7 +263,7 @@ public partial class Save : NotifyPropertyChanged
         {
             _lifetimeClicks = value;
             OnPropertyChanged();
-            ReadOnlyDependency.LifetimeClicks.InvokePropertyChanged(nameof(Currency.Value));
+            ReadOnlyDependency.LifetimeClicks.NotifyPropertyChanged(nameof(Currency.Value));
         }
     }
 
@@ -276,7 +279,7 @@ public partial class Save : NotifyPropertyChanged
         {
             _lifetimeTriangleClicks = value;
             OnPropertyChanged();
-            ReadOnlyDependency.LifetimeTriangleClicks.InvokePropertyChanged(nameof(Currency.Value));
+            ReadOnlyDependency.LifetimeTriangleClicks.NotifyPropertyChanged(nameof(Currency.Value));
         }
     }
 

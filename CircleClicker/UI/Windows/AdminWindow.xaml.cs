@@ -1,13 +1,15 @@
-﻿using CircleClicker.Models;
-using CircleClicker.Models.Database;
-using CircleClicker.UI.Controls;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Markup;
+using CircleClicker.Models;
+using CircleClicker.Models.Database;
+using CircleClicker.UI.Controls;
+using CircleClicker.Utils;
+using Microsoft.EntityFrameworkCore;
+using BC = BCrypt.Net.BCrypt;
 
 namespace CircleClicker.UI.Windows
 {
@@ -16,7 +18,10 @@ namespace CircleClicker.UI.Windows
     /// </summary>
     public partial class AdminWindow : Window
     {
-        public static class Columns
+        /// <summary>
+        /// Column templates for purchase columns.
+        /// </summary>
+        private static class Columns
         {
             public static DataGridTextColumn Text(string prop, string? name = null)
             {
@@ -61,16 +66,15 @@ namespace CircleClicker.UI.Windows
             )
             {
                 // Adapted from https://www.codeproject.com/articles/444371/creating-wpf-data-templates-in-code-the-right-way
-                // TODO: just place these in AdminWindow
                 string xaml = $$"""
-                        <DataTemplate>
-                            <controls:{{(integer ? nameof(IntEntryControl) : nameof(DoubleEntryControl))}}
-                                Maximum="{{(
-                                    integer ? int.MaxValue.ToString(App.Culture) : double.MaxValue.ToString(App.Culture)
-                                )}}"
-                                Value="{Binding {{prop}}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                        </DataTemplate>
-                        """;
+                    <DataTemplate>
+                        <controls:{{(integer ? nameof(IntEntryControl) : nameof(DoubleEntryControl))}}
+                            Maximum="{{(
+                                integer ? int.MaxValue.ToString(App.Culture) : double.MaxValue.ToString(App.Culture)
+                            )}}"
+                            Value="{Binding {{prop}}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </DataTemplate>
+                    """;
 
                 ParserContext ctx = new() { XamlTypeMapper = new XamlTypeMapper([]) };
                 ctx.XamlTypeMapper.AddMappingProcessingInstruction(
@@ -109,12 +113,15 @@ namespace CircleClicker.UI.Windows
         }
 #pragma warning restore CA1822 // Mark members as static
 
-        public bool IsUserSelected => dg_users.SelectedItem is User;
+        /// <summary>
+        /// Whether a user is selected and the selected user can be edited.
+        /// </summary>
+        public bool IsUserSelected { get; private set; }
         #endregion
 
-        public static Main Main => Main.Instance;
+        private static Main Main => Main.Instance;
 
-        public static ObservableCollection<DataGridColumn> PurchaseColumns =>
+        private static ObservableCollection<DataGridColumn> PurchaseColumns =>
             [
                 Columns.Text("Name"),
                 Columns.ComboBox("Requires", IReadOnlyDependency.Instances, true),
@@ -127,10 +134,10 @@ namespace CircleClicker.UI.Windows
                 Columns.Number("MaxAmount", true, name: "Max"),
             ];
 
-        public static ObservableCollection<DataGridColumn> BuildingColumns =>
+        private static IEnumerable<DataGridColumn> BuildingColumns =>
             [.. PurchaseColumns, Columns.Number("BaseProduction", name: "Production"),];
 
-        public static ObservableCollection<DataGridColumn> UpgradeColumns =>
+        private static IEnumerable<DataGridColumn> UpgradeColumns =>
             [
                 .. PurchaseColumns,
                 Columns.ComboBox("Affects", IStat.Instances),
@@ -212,6 +219,7 @@ namespace CircleClicker.UI.Windows
             AddSaveProperty(nameof(Save.LifetimeTriangleClicks), true);
         }
 
+#pragma warning disable IDE1006 // Naming Styles
         private void DataGrid_Unloaded(object sender, RoutedEventArgs e)
         {
             if (e.Source is DataGrid dataGrid)
@@ -244,18 +252,18 @@ namespace CircleClicker.UI.Windows
             Main.IsAutosavingEnabled = true;
         }
 
-#pragma warning disable IDE1006 // Naming Styles
         private void btn_sampleData_Click(object sender, RoutedEventArgs e)
         {
             MessageBoxResult result = MessageBoxEx.Show(
                 this,
                 """
-                Are you sure you want to load the default buildings and upgrades? This may impact save data.
+                Are you sure you want to load the default buildings and upgrades? <font weight="500">This may impact save data.</font>
+
                 Click <b>Yes</b> to update the existing purchases with the default data.
                 Click <b>No</b> to first delete any existing purchases. <font weight="500">This will remove all owned purchases from saves.</font>
                 """,
                 MessageBoxButton.YesNoCancel,
-                MessageBoxImage.Question
+                MessageBoxImage.Warning
             );
 
             if (result is MessageBoxResult.Yes or MessageBoxResult.No)
@@ -287,34 +295,151 @@ namespace CircleClicker.UI.Windows
             tb_test_msgBoxResult.Text = result.ToString();
         }
 
+        private void dg_users_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            bool canEdit = false;
+            if (dg_users.SelectedItem is User user)
+            {
+                canEdit = !user.IsAdmin;
+                tbx_username.Text = user.Name;
+                pwdbx.Password = "";
+            }
+
+            btn_updateUser.IsEnabled = canEdit;
+            btn_banUser.IsEnabled = canEdit;
+        }
+
         private void btn_createUser_Click(object sender, RoutedEventArgs e)
         {
-            User? user = User.CreateUser(tbx_username.Text, pwdbx.Password, out string errorMessage);
+            User? user = User.CreateUser(
+                tbx_username.Text,
+                pwdbx.Password,
+                out string errorMessage
+            );
             if (user == null)
             {
                 MessageBoxEx.Show(errorMessage, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            MessageBoxEx.Show(
+                $"Successfully created the user <b>{user.Name}</b>.",
+                icon: MessageBoxImage.Information
+            );
         }
 
         private void btn_updateUser_Click(object sender, RoutedEventArgs e)
         {
-            if (dg_users.SelectedItem is not User user)
+            if (dg_users.SelectedItem is not User user || user.IsAdmin)
             {
                 return;
             }
 
-            MessageBoxEx.Show("Not implemented", MessageBoxButton.OK, MessageBoxImage.Error);
+            try
+            {
+                if (tbx_username.Text != user.Name)
+                {
+                    if (Main.DB.Users.Any(u => u.Name == tbx_username.Text))
+                    {
+                        MessageBoxEx.Show(
+                            $"The username <b>{tbx_username.Text}</b> is in use.",
+                            icon: MessageBoxImage.Error
+                        );
+                    }
+                    user.Name = tbx_username.Text;
+                }
+
+                if (pwdbx.Password != "")
+                {
+                    user.Password = BC.HashPassword(pwdbx.Password);
+                }
+
+                Main.DB.SaveChanges();
+
+                // User isn't an Observable (and I don't want to make it one rn)
+                dg_users.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxEx.Show(
+                    $"Something went wrong while trying to update the user.",
+                    icon: MessageBoxImage.Error,
+                    exception: ex
+                );
+            }
         }
 
         private void btn_banUser_Click(object sender, RoutedEventArgs e)
         {
-            if (dg_users.SelectedItem is not User user)
+            if (dg_users.SelectedItem is not User user || user.IsAdmin)
             {
                 return;
             }
 
-            MessageBoxEx.Show("Not implemented", MessageBoxButton.OK, MessageBoxImage.Error);
+            TimeSpan duration;
+            try
+            {
+                duration = Helpers.ParseTimeSpan(tbx_banDuration.Text);
+            }
+            catch (Exception ex)
+            {
+                MessageBoxEx.Show(
+                    "The given ban duration is invalid.",
+                    icon: MessageBoxImage.Warning,
+                    exception: ex
+                );
+                return;
+            }
+
+            try
+            {
+                user.BanReason = tbx_banReason.Text;
+                user.BannedUntil = DateTime.Now + duration;
+                Main.DB.SaveChanges();
+                dg_users.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxEx.Show(
+                    "Something went wrong while trying to ban the user.",
+                    icon: MessageBoxImage.Error,
+                    exception: ex
+                );
+                return;
+            }
+
+            MessageBoxEx.Show(
+                $"Successfully banned <b>{user.Name}</b> for <b>{duration.PrettyPrint()}</b> with reason \"<b>{tbx_banReason.Text}</b>\".",
+                icon: MessageBoxImage.Information
+            );
+        }
+
+        private void btn_wipeUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (dg_users.SelectedItem is not User user || user.IsAdmin)
+            {
+                return;
+            }
+
+            try
+            {
+                user.Saves.Clear();
+                Main.DB.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxEx.Show(
+                    "Something went wrong while trying to delete the user's saves.",
+                    icon: MessageBoxImage.Error,
+                    exception: ex
+                );
+                return;
+            }
+
+            MessageBoxEx.Show(
+                $"Successfully deleted <b>{user.Name}</b>'s saves.",
+                icon: MessageBoxImage.Information
+            );
         }
 #pragma warning restore IDE1006 // Naming Styles
     }

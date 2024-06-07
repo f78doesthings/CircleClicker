@@ -1,9 +1,7 @@
-﻿using CircleClicker.Models.Database;
-using CircleClicker.Utils;
-using System.Windows;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Effects;
+using CircleClicker.Models.Database;
+using CircleClicker.Utils;
 
 namespace CircleClicker.Models
 {
@@ -36,15 +34,17 @@ namespace CircleClicker.Models
         public string? Name { get; }
 
         /// <summary>
-        /// Gets the current value of this dependency.
+        /// Gets the value of this dependency for the current save..
         /// </summary>
         public double Value { get; }
         #endregion
 
         #region Implementation
         /// <summary>
-        /// Formats a number for this dependency.<br />
-        /// If the format string starts with <c>R+</c> or <c>R-</c>, this will return text for use with <see cref="Helpers.ParseInlines"/> (if <c>R-</c>, will not include AccentBrush).
+        /// Formats a number for this dependency.
+        /// <br />
+        /// If the format string starts with <c>R+</c> or <c>R-</c>, this will return text for use with <see cref="Helpers.ParseInlines"/>
+        /// (if <c>R-</c>, will not include AccentBrush).
         /// </summary>
         public string Format(
             double number,
@@ -65,6 +65,11 @@ namespace CircleClicker.Models
             IFormatProvider? formatProvider = null
         )
         {
+            if (format?.Length >= 2 && format.StartsWith('R'))
+            {
+                format = format.Length > 2 ? format[2..] : null;
+            }
+
             string text = number.FormatSuffixes(format, formatProvider ?? App.Culture);
             if (dependency.Name != null)
             {
@@ -96,7 +101,7 @@ namespace CircleClicker.Models
 
         #region Model
         /// <summary>
-        /// Gets and sets the current value of this dependency.
+        /// Gets and sets the value of this dependency for the current save.
         /// </summary>
         public new double Value { get; set; }
         #endregion
@@ -105,7 +110,7 @@ namespace CircleClicker.Models
     /// <summary>
     /// A stat that can unlock something else.
     /// </summary>
-    public class ReadOnlyDependency : NotifyPropertyChanged, IReadOnlyDependency
+    public class ReadOnlyDependency : Observable, IReadOnlyDependency
     {
         #region Instances
         /// <summary>
@@ -234,6 +239,24 @@ namespace CircleClicker.Models
             Instances.Add(this);
         }
 
+        /// <summary>
+        /// Returns the value of this dependency for the given save.
+        /// </summary>
+        public double GetValue(Save save)
+        {
+            return Getter(save);
+        }
+
+        // Exposes IReadOnlyDependency.Format
+        public virtual string Format(
+            double number,
+            string? format = null,
+            IFormatProvider? formatProvider = null
+        )
+        {
+            return IReadOnlyDependency.DefaultFormat(this, number, format, formatProvider);
+        }
+
         public override string ToString()
         {
             return DependencyId;
@@ -265,16 +288,6 @@ namespace CircleClicker.Models
         protected override void Register()
         {
             IDependency.Register(this);
-        }
-
-        // Exposes IDependency.Format
-        public virtual string Format(
-            double number,
-            string? format = null,
-            IFormatProvider? formatProvider = null
-        )
-        {
-            return IReadOnlyDependency.DefaultFormat(this, number, format, formatProvider);
         }
         #endregion
     }
