@@ -68,6 +68,7 @@ namespace CircleClicker.UI.Windows
                     }
                 }
                 saves.Sort((a, b) => dependency.GetValue(a).CompareTo(dependency.GetValue(b)));
+                saves.Reverse();
 
                 for (int i = 0; i < MaxItems && i < saves.Count; i++)
                 {
