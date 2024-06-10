@@ -226,6 +226,7 @@
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
             <Setter Property="Background" Value="{StaticResource AccentBrush}" />
             <Setter Property="BorderThickness" Value="0" />
+            <EventSetter Event="PreviewKeyDown" Handler="Button_PreviewKeyDown" />
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -250,6 +251,7 @@
             <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
             <Setter Property="Background" Value="{StaticResource AccentBrush}" />
             <Setter Property="BorderThickness" Value="0" />
+            <EventSetter Event="PreviewKeyDown" Handler="Button_PreviewKeyDown" />
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -835,7 +837,6 @@
         </ControlTemplate>
 
         <Style TargetType="ScrollBar">
-
             <Setter Property="OverridesDefaultStyle" Value="True" />
             <Style.Triggers>
                 <Trigger Property="Orientation" Value="Horizontal">

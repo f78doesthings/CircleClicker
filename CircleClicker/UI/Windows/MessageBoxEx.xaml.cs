@@ -322,6 +322,7 @@ namespace CircleClicker.UI.Windows
                 icon,
                 exception
             );
+
             messageBox.TextBoxEnabled = true;
             var result = messageBox.GetDialogResult(buttons);
             return result == MessageBoxResult.OK ? messageBox.InputText : null;
@@ -379,8 +380,12 @@ namespace CircleClicker.UI.Windows
                 {
                     Message = message,
                     Exception = exception,
-                    Owner = owner
+                    Owner = owner,
                 };
+            if (owner == null)
+            {
+                messageBox.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
 
             switch (icon)
             {

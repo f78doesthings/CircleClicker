@@ -29,7 +29,7 @@ public class Building : Purchase, IStat
 
     #region Values for CurrentSave
     public override string Description =>
-        $"Base: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Value, "R+")}/s</font> | Total: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Production, "R+")}/s</font> ({(Production / Models.Currency.Circles.Production).ToString("P2", App.Culture)})";
+        $"Base: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Value, "R+")}/s</font> | Total: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Production, "R+")}/s</font> ({(ProductionFraction).ToString("P2", App.Culture)})";
 
     public override int Amount
     {
@@ -49,6 +49,14 @@ public class Building : Purchase, IStat
     /// The current production of the building.
     /// </summary>
     public double Production => Value * Amount;
+
+    /// <summary>
+    /// The fraction of the total production this building is currently producting.
+    /// </summary>
+    public double ProductionFraction =>
+        Models.Currency.Circles.Production == 0
+            ? 0
+            : Production / Models.Currency.Circles.Production;
     #endregion
 
     #region IStat implementation

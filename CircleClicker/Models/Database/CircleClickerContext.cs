@@ -154,7 +154,7 @@ public partial class CircleClickerContext : DbContext
 
         modelBuilder.Entity<Upgrade>(entity =>
         {
-            entity.Property(e => e.AffectedId).HasColumnName("affects");
+            entity.Property(e => e.AffectedId).HasMaxLength(32).HasColumnName("affects");
             entity.Property(e => e.BaseEffect).HasColumnName("effect");
         });
 

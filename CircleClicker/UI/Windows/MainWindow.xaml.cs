@@ -91,6 +91,10 @@ namespace CircleClicker.UI.Windows
                 Main.DB.Purchases.Load();
                 Main.DB.OwnedPurchases.Where(v => v.Save == Main.CurrentSave).Load();
             }
+            else
+            {
+                btn_leaderboards.Visibility = Visibility.Collapsed;
+            }
 
             DataTemplate? purchaseTemplate = TryFindResource("PurchaseTemplate") as DataTemplate;
             foreach (Currency currency in Currency.Instances)
@@ -415,6 +419,8 @@ namespace CircleClicker.UI.Windows
         /// </summary>
         private void btn_leaderboards_Click(object sender, RoutedEventArgs e)
         {
+            Mouse.OverrideCursor = Cursors.Wait;
+
             try
             {
                 LeaderboardWindow window = new() { Owner = this };
@@ -428,6 +434,8 @@ namespace CircleClicker.UI.Windows
                     exception: ex
                 );
             }
+
+            Mouse.OverrideCursor = null;
         }
 
         /// <summary>

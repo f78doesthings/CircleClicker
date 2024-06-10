@@ -4,15 +4,16 @@ A customisable clicker game inspired by [Cookie Clicker](https://orteil.dashnet.
 
 This is a school project of mine that I ended up spending a lot of my free time on, making it much bigger than I had anticipated.
 
-*If* I decide to continue this project after my course ends on 7 June 2024, I will probably make a version of Circle Clicker that is cross-platform and won't require a MySQL database. **No guarantees here.**
+*If* I decide to continue this project in the future, I will probably make a version of Circle Clicker that is cross-platform and won't require a MySQL database. **No guarantees here.**
 
 ## Saving
 
-Circle Clicker currently uses MySQL to save user data, buildings, upgrades and game variables.
-(This is because using a database is required for the school project.)
+This version of Circle Clicker is configured to use a local MySQL server to save user data, buildings, upgrades and game variables.
+(This is because using a database was required for the school project.)
 
 > [!IMPORTANT]
-> If you want to enable saving, you should install [XAMPP](https://www.apachefriends.org/index.html) and use its bundled MySQL server.
+> If you want to enable saving, you should install [XAMPP](https://www.apachefriends.org/index.html) and using its bundled MySQL server, as I use this to perform testing.
+> 
 > Circle Clicker will automatically create a database for you on startup if it doesn't exist.
 
 ## Tips

@@ -180,6 +180,11 @@ namespace CircleClicker
             }
         }
 
+        private void Button_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = e.IsRepeat;
+        }
+
         private static async Task CreateDatabase(bool deleteFirst = false)
         {
             if (deleteFirst)
