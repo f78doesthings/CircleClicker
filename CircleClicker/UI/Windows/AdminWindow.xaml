@@ -227,7 +227,7 @@
                 </WrapPanel>
             </TabItem>
 
-            <TabItem Header="Testing">
+            <TabItem Name="tab_test" Header="Testing">
                 <WrapPanel Margin="10,0,10,10" Orientation="Vertical">
                     <Label>
                         Enable button

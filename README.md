@@ -12,8 +12,7 @@ This version of Circle Clicker is configured to use a local MySQL server to save
 (This is because using a database was required for the school project.)
 
 > [!IMPORTANT]
-> If you want to enable saving, you should install [XAMPP](https://www.apachefriends.org/index.html) and using its bundled MySQL server, as I use this to perform testing.
-> 
+> If you want to enable saving, you should install [XAMPP](https://www.apachefriends.org/index.html) and use its bundled MySQL server, as this is what I use to perform testing.
 > Circle Clicker will automatically create a database for you on startup if it doesn't exist.
 
 ## Tips
@@ -28,4 +27,8 @@ Administrators have access to some extra features to aid with testing, as well a
 
 Circle Clicker supports playing back your own music. Simply place the music files you want to play in `<APPDIR>/Resources/Music`, where `<APPDIR>` is the folder that contains the `CircleClicker.exe` executable.
 
-(Circle Clicker currently comes with 1 of my own songs by default. I will add more later.)
+> [!TIP]
+> You can find a ZIP file containing some of my own music [here](Assets/Music.zip).
+> 
+> To play back this music in Circle Clicker, just extract this archive in the folder that contains the `CircleClicker.exe` executable.
+> This will create the folders necessary to play back the music in Circle Clicker.

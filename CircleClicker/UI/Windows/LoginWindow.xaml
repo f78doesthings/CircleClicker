@@ -20,9 +20,9 @@
             Something went wrong. Please try again later.
         </Label>
         <Label Target="{Binding ElementName=tbx_username}">Username</Label>
-        <TextBox Name="tbx_username">admin</TextBox>
+        <TextBox Name="tbx_username" />
         <Label Target="{Binding ElementName=pwdbx}">Password</Label>
-        <PasswordBox Name="pwdbx" Password="admin" />
+        <PasswordBox Name="pwdbx" />
 
         <Button
             Name="btn_login"

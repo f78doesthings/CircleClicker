@@ -11,18 +11,11 @@
     
     <Authors>f78</Authors>
     <AssemblyTitle>Circle Clicker</AssemblyTitle>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Music\f78 - rivers.mp3" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="Resources\Icon.ico" />
-    <Content Include="Resources\Music\f78 - rivers.mp3">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Resource Include="Resources\Sounds\ClickOff.mp3" />
     <Resource Include="Resources\Sounds\ClickOn.mp3" />
     <Resource Include="Resources\Sounds\Collect.mp3" />

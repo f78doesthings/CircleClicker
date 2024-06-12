@@ -150,6 +150,10 @@ namespace CircleClicker.UI.Windows
             Main.IsAutosavingEnabled = null;
             DataContext = this;
 
+#if !DEBUG
+            tab_test.Visibility = Visibility.Collapsed;
+#endif
+
             if (Main.IsDBAvailable)
             {
                 Main.DB.Users.Load();

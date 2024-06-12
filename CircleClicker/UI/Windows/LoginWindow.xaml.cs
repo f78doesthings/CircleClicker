@@ -19,6 +19,11 @@ namespace CircleClicker.UI.Windows
         {
             InitializeComponent();
             tb_error.Visibility = Visibility.Collapsed;
+
+#if DEBUG
+            tbx_username.Text = "admin";
+            pwdbx.Password = "admin";
+#endif
         }
 
 #pragma warning disable IDE1006 // Naming Styles
