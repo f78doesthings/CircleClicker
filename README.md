@@ -11,7 +11,7 @@ More versions may be coming soon. **No guarantees here.**
 
 ## Saving
 
-As of version 1.1.0, you no longer need a MySQL server! Instead, save data, buildings, upgrades and game variables are now saved to a file called `save.json` in the same folder as the `CircleClicker.exe` executable. *Just make sure you have permissions to write to that location...*
+As of version [1.1.0 alpha 1](https://github.com/f78doesthings/CircleClicker/releases/tag/v1.1.0-alpha.1), you no longer need a MySQL server! Instead, save data, buildings, upgrades and game variables are now saved to a file called `save.json` in the same folder as the `CircleClicker.exe` executable. *Just make sure you have permissions to write to that location...*
 
 If for whatever reason you still want to use a local MySQL server, you can launch Circle Clicker with the `--online` flag.
 
@@ -35,6 +35,6 @@ Creating a user named `admin` will automatically give it administrator privilege
 
 Administrators have access to some extra features to aid with testing, as well as the Admin Panel, where you can edit things like purchases, game variables and other users.
 
-#### Offline mode
+#### Offline mode (v1.1.0+)
 
 To gain access to the administrator features described above in offline mode, simply launch Circle Clicker with the `--test` flag. Keep in mind that some of these features may not fully work in offline mode.
