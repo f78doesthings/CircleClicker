@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
@@ -147,7 +148,7 @@ public abstract partial class Purchase : Observable, IDependency
     /// The dependency that needs to be above <see cref="BaseRequirement"/> to be able to purchase this upgrade.<br />
     /// Can be <see langword="null"/>, in which case this purchase will have no requirement.
     /// </summary>
-    [NotMapped]
+    [NotMapped, JsonIgnore]
     public IReadOnlyDependency? Requires
     {
         get => _requires;
@@ -162,7 +163,7 @@ public abstract partial class Purchase : Observable, IDependency
     /// The <see cref="IDependency"/> used to purchase this upgrade.<br />
     /// May return <see langword="null"/> if the currency no longer exists.
     /// </summary>
-    [NotMapped, MaybeNull]
+    [NotMapped, JsonIgnore, MaybeNull]
     public IDependency Currency
     {
         get => _currency;
@@ -301,7 +302,7 @@ public abstract partial class Purchase : Observable, IDependency
     {
         get =>
             Main.Instance.CurrentSave?.OwnedPurchases?.FirstOrDefault(v =>
-                v.Purchase == this
+                v.Purchase == this || v.PurchaseId == Id
             )?.Amount ?? 0;
         set
         {
@@ -311,11 +312,16 @@ public abstract partial class Purchase : Observable, IDependency
             }
 
             OwnedPurchase? owned = Main.Instance.CurrentSave.OwnedPurchases.FirstOrDefault(v =>
-                v.Purchase == this
+                v.Purchase == this || v.PurchaseId == Id
             );
             if (owned == null)
             {
-                owned = new() { Save = Main.Instance.CurrentSave, Purchase = this, };
+                owned = new()
+                {
+                    Save = Main.Instance.CurrentSave,
+                    Purchase = this,
+                    PurchaseId = Id
+                };
                 Main.Instance.CurrentSave.OwnedPurchases.Add(owned);
             }
 

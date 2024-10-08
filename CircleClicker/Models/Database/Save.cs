@@ -1,4 +1,5 @@
-﻿using CircleClicker.Utils;
+﻿using System.Text.Json.Serialization;
+using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
 
@@ -7,8 +8,10 @@ namespace CircleClicker.Models.Database;
 /// </summary>
 public partial class Save : Observable
 {
+    [JsonIgnore]
     public int Id { get; set; }
 
+    [JsonIgnore]
     public int UserId { get; set; }
 
     private double _circles;
@@ -296,6 +299,7 @@ public partial class Save : Observable
     /// <summary>
     /// The <see cref="Database.User"/> that this save belongs to.
     /// </summary>
+    [JsonIgnore]
     public virtual User User { get; set; }
 
     public Save()

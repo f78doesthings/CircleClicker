@@ -4,24 +4,18 @@ A customisable clicker game inspired by [Cookie Clicker](https://orteil.dashnet.
 
 This is a school project of mine that I ended up spending a lot of my free time on, making it much bigger than I had anticipated.
 
-*If* I decide to continue this project in the future, I will probably make a version of Circle Clicker that is cross-platform and won't require a MySQL database. **No guarantees here.**
+## Other versions
+- **1.x** - The original WPF version for Windows (you're here!)
+
+More versions may be coming soon. **No guarantees here.**
 
 ## Saving
 
-This version of Circle Clicker is configured to use a local MySQL server to save user data, buildings, upgrades and game variables.
-(This is because using a database was required for the school project.)
+As of version 1.1.0, you no longer need a MySQL server! Instead, save data, buildings, upgrades and game variables are now saved to a file called `save.json` in the same folder as the `CircleClicker.exe` executable. *Just make sure you have permissions to write to that location...*
 
-> [!IMPORTANT]
-> If you want to enable saving, you should install [XAMPP](https://www.apachefriends.org/index.html) and use its bundled MySQL server, as this is what I use to perform testing.
-> Circle Clicker will automatically create a database for you on startup if it doesn't exist.
+If for whatever reason you still want to use a local MySQL server, you can launch Circle Clicker with the `--online` flag.
 
 ## Tips
-
-### Creating an administrator account
-
-Creating a user named `admin` will automatically give it administrator privileges. (If you want more administrators, you'll need to edit the database yourself.)
-
-Administrators have access to some extra features to aid with testing, as well as the Admin Panel, where you can edit things like purchases and game variables.
 
 ### Music playback
 
@@ -32,3 +26,15 @@ Circle Clicker supports playing back your own music. Simply place the music file
 > 
 > To play back this music in Circle Clicker, just extract this archive in the folder that contains the `CircleClicker.exe` executable.
 > This will create the folders necessary to play back the music in Circle Clicker.
+
+### Administrator privileges
+
+#### Online mode
+
+Creating a user named `admin` will automatically give it administrator privileges. (If you want more administrators, you'll need to edit the database yourself.)
+
+Administrators have access to some extra features to aid with testing, as well as the Admin Panel, where you can edit things like purchases, game variables and other users.
+
+#### Offline mode
+
+To gain access to the administrator features described above in offline mode, simply launch Circle Clicker with the `--test` flag. Keep in mind that some of these features may not fully work in offline mode.

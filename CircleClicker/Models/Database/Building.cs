@@ -1,4 +1,6 @@
-﻿namespace CircleClicker.Models.Database;
+﻿using System.Text.Json.Serialization;
+
+namespace CircleClicker.Models.Database;
 
 /// <summary>
 /// A purchase that produces circles over time.
@@ -31,6 +33,7 @@ public class Building : Purchase, IStat
     public override string Description =>
         $"Base: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Value, "R+")}/s</font> | Total: <font color=\"res:ForegroundBrush\">{Models.Currency.Circles.Format(Production, "R+")}/s</font> ({(ProductionFraction).ToString("P2", App.Culture)})";
 
+    [JsonIgnore]
     public override int Amount
     {
         get => base.Amount;

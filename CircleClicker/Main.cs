@@ -1,15 +1,16 @@
-﻿using CircleClicker.Models;
+﻿using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using CircleClicker.Models;
 using CircleClicker.Models.Database;
 using CircleClicker.Utils;
-using System.Collections.ObjectModel;
 
 namespace CircleClicker
 {
     public class Main : Observable
     {
         #region Constants
-        private Main() { }
-
         public static readonly Main Instance = new();
 
         /// <summary>
@@ -34,6 +35,10 @@ namespace CircleClicker
             new("ReincarnationCost", 1_000_000_000);
 
         public static readonly VariableReference SquarePower = new("SquarePower", 0.5);
+
+        public static readonly JsonSerializerOptions SerializerOptions =
+            new() { IgnoreReadOnlyProperties = true, };
+
         #endregion
 
         #region Properties / Fields
@@ -52,6 +57,7 @@ namespace CircleClicker
         /// <summary>
         /// Whether database changes are currently being saved.
         /// </summary>
+        [JsonIgnore]
         public bool IsSaving
         {
             get => _isSaving;
@@ -65,11 +71,13 @@ namespace CircleClicker
         /// <summary>
         /// The exception that occured during the last save operation, if any.
         /// </summary>
+        [JsonIgnore]
         public Exception? LastSaveException { get; set; }
 
         /// <summary>
         /// Whether the database is currently available. This is checked once during startup.
         /// </summary>
+        [JsonIgnore]
         public bool IsDBAvailable { get; set; } = false;
 
         /// <summary>
@@ -79,22 +87,26 @@ namespace CircleClicker
         /// If <see langword="null"/>, only <see cref="Observable.NotifyPropertyChanged"/> can be called.<br />
         /// If <see langword="false"/>, none of the above can be called.
         /// </summary>
+        [JsonIgnore]
         public bool? IsAutosavingEnabled { get; set; } = true;
 
         /// <summary>
         /// A global random number generator.
         /// </summary>
+        [JsonIgnore]
         public Random RNG { get; } = new();
 
         /// <summary>
         /// The global database context.<br />
         /// Make sure to check <see cref="IsDBAvailable"/> before using this, as not doing so will result in an error if the database is unavailable.
         /// </summary>
+        [JsonIgnore]
         public CircleClickerContext DB { get; } = new();
 
         /// <summary>
         /// The user that is currently logged in.
         /// </summary>
+        [JsonIgnore]
         public User? CurrentUser { get; set; }
 
         /// <summary>
@@ -227,6 +239,11 @@ namespace CircleClicker
                     LastSaveException = ex;
                 }
             }
+            else
+            {
+                await using FileStream stream = File.Open("save.json", FileMode.Create);
+                await JsonSerializer.SerializeAsync(stream, this, SerializerOptions);
+            }
 
             IsSaving = false;
         }
@@ -234,6 +251,7 @@ namespace CircleClicker
         /// <summary>
         /// Updates CurrentSave.LastSaveDate and saves all changes to the database.
         /// </summary>
+        [Obsolete("Use SaveAsync instead")]
         public void Save()
         {
             if (CurrentSave == null || IsSaving)
@@ -264,10 +282,11 @@ namespace CircleClicker
         /// <summary>
         /// Replaces all purchases with default data.
         /// </summary>
-        public void LoadSampleData(bool deleteExistingData = false)
+        public void LoadSampleData(bool deleteExistingData = false, bool offlineMode = false)
         {
             bool? prevState = IsAutosavingEnabled;
             IsAutosavingEnabled = false;
+            int id = 0;
             int buildingIndex = 0;
             int upgradeIndex = 0;
 
@@ -305,6 +324,11 @@ namespace CircleClicker
                 else
                 {
                     throw new NotSupportedException();
+                }
+
+                if (offlineMode)
+                {
+                    purchase.Id = ++id;
                 }
 
                 return purchase;

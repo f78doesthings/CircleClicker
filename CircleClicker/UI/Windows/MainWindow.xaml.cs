@@ -246,7 +246,7 @@ namespace CircleClicker.UI.Windows
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (!_timer.IsEnabled || !Main.IsDBAvailable)
+            if (!_timer.IsEnabled)
             {
                 return;
             }

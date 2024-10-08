@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using CircleClicker.Utils;
 
 namespace CircleClicker.Models.Database;
@@ -40,7 +41,7 @@ public partial class Upgrade : Purchase
     /// The stat this upgrade affects.<br />
     /// May return <see langword="null"/> if the stat no longer exists.
     /// </summary>
-    [NotMapped, MaybeNull]
+    [NotMapped, JsonIgnore, MaybeNull]
     public IStat Affects
     {
         get => _affects; // IStat.Instances.Find(v => v.StatId == AffectedId);
@@ -53,6 +54,7 @@ public partial class Upgrade : Purchase
         }
     }
 
+    [JsonIgnore]
     public string? DesignDescription
     {
         private get;
@@ -96,6 +98,7 @@ public partial class Upgrade : Purchase
     #region Values for CurrentSave
     public override bool IsUnlocked => Affects != null && base.IsUnlocked;
 
+    [JsonIgnore]
     public override int Amount
     {
         get => base.Amount;

@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Circle Clicker": {
+      "commandName": "Project"
+    },
+    "Circle Clicker - Test Mode": {
+      "commandName": "Project",
+      "commandLineArgs": "--test"
+    },
+    "Circle Clicker - Online Mode": {
+      "commandName": "Project",
+      "commandLineArgs": "--online"
+    }
+  }
+}

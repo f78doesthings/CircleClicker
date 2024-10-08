@@ -1,12 +1,14 @@
-﻿using CircleClicker.Models;
-using CircleClicker.Models.Database;
-using CircleClicker.UI.Windows;
-using CircleClicker.Utils.Audio;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Navigation;
+using CircleClicker.Models;
+using CircleClicker.Models.Database;
+using CircleClicker.UI.Windows;
+using CircleClicker.Utils.Audio;
 
 namespace CircleClicker
 {
@@ -67,72 +69,111 @@ namespace CircleClicker
             bool shouldConnect = true;
             Exception? connectException = null;
 
-            progressBox.Message = "Connecting...";
+            // TODO: consider finding a better way to do flags
+            bool onlineMode = e.Args.Contains("--online");
+            bool testMode = e.Args.Contains("--test");
+
+            if (onlineMode)
+            {
+                progressBox.Message = "Connecting...";
 #if DEBUG
-            // Check if MySQL is running locally
-            try
-            {
-                Process[] processes = Process.GetProcessesByName("mysqld");
-                if (processes.Length == 0)
-                {
-                    shouldConnect = false;
-                    connectException = new Exception("The mysqld process is not running.");
-                    Main_.IsDBAvailable = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                progressBox.Exception = ex;
-            }
-#endif
-            if (shouldConnect)
-            {
+                // Check if MySQL is running locally
                 try
                 {
-                    // Create the database if it does not already exist
-                    await CreateDatabase();
+                    Process[] processes = Process.GetProcessesByName("mysqld");
+                    if (processes.Length == 0)
+                    {
+                        shouldConnect = false;
+                        connectException = new Exception("The mysqld process is not running.");
+                        Main_.IsDBAvailable = false;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    connectException = ex;
-                    Main_.IsDBAvailable = false;
+                    progressBox.Exception = ex;
                 }
+#endif
+                if (shouldConnect)
+                {
+                    try
+                    {
+                        // Create the database if it does not already exist
+                        await CreateDatabase();
+                    }
+                    catch (Exception ex)
+                    {
+                        connectException = ex;
+                        Main_.IsDBAvailable = false;
+                    }
+                }
+                //Main_.IsDBAvailable = await Main_.DB.Database.CanConnectAsync();
             }
-            //Main_.IsDBAvailable = await Main_.DB.Database.CanConnectAsync();
 
             if (!Main_.IsDBAvailable)
             {
-                MessageBoxResult result = MessageBoxEx.Show(
-                    progressBox,
-                    """
-                    An error occured while trying to communicate with the MySQL database.
-                    You may still play the game in offline mode, but your progress won't be saved.
-                    For more info on saving, click <a href="https://github.com/f78doesthings/CircleClicker#saving">here</a>.
-                        
-                    Click <b>Yes</b> to launch the game in offline mode, with the default data.
-                    Click <b>No</b> to launch with no default data.
-                    """,
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Error,
-                    connectException
-                );
-
-                if (result is not MessageBoxResult.Yes and not MessageBoxResult.No)
+                MessageBoxResult result = MessageBoxResult.Yes;
+                if (onlineMode)
                 {
+                    result = MessageBoxEx.Show(
+                        progressBox,
+                        """
+                        An error occured while trying to communicate with the MySQL database.
+                        You may still play the game in offline mode, but your progress won't be saved.
+                        For more info on saving, click <a href="https://github.com/f78doesthings/CircleClicker#saving">here</a>.
+                                
+                        Click <b>Yes</b> to launch the game in offline mode, with the default data.
+                        Click <b>No</b> to launch with no default data.
+                        """,
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Error,
+                        connectException
+                    );
+
+                    if (result is not MessageBoxResult.Yes and not MessageBoxResult.No)
+                    {
+                        progressBox.Close();
+                        return;
+                    }
+                }
+
+                // Set up a temporary environment
+                Main? savedData = null;
+                try
+                {
+                    using FileStream stream = File.OpenRead("save.json");
+                    savedData = await JsonSerializer.DeserializeAsync<Main>(
+                        stream,
+                        CircleClicker.Main.SerializerOptions
+                    );
+                }
+                catch (FileNotFoundException)
+                {
+                    // Save data doesn't exist, so ignore
+                }
+                catch (Exception ex)
+                {
+                    MessageBoxResult result2 = MessageBoxEx.Show(
+                        progressBox,
+                        """
+                        An error occured while loading the offline mode save data. Circle Clicker will now close.
+                        """,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        ex
+                    );
                     progressBox.Close();
                     return;
                 }
 
-                // Set up a temporary environment
-                Main_.Buildings = [];
-                Main_.Upgrades = [];
-                Main_.Variables = [];
-                Main_.CurrentUser = new User() { IsAdmin = true };
-                Main_.CurrentSave = new Save(Main_.CurrentUser);
+                Main_.Buildings = savedData?.Buildings ?? [];
+                Main_.Upgrades = savedData?.Upgrades ?? [];
+                Main_.Variables = savedData?.Variables ?? [];
+                Main_.CurrentUser = new User() { IsAdmin = testMode };
+                Main_.CurrentSave = savedData?.CurrentSave ?? new Save(Main_.CurrentUser);
 
-                if (result == MessageBoxResult.Yes)
+                if ((onlineMode && result == MessageBoxResult.Yes) || savedData == null)
                 {
-                    Main_.LoadSampleData();
+                    Main_.LoadSampleData(true, true);
                 }
 
                 startWindow = new MainWindow { Title = "Circle Clicker - Offline Mode" };

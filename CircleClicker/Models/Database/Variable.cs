@@ -1,4 +1,6 @@
-﻿namespace CircleClicker.Models.Database;
+﻿using System.Text.Json.Serialization;
+
+namespace CircleClicker.Models.Database;
 
 /// <summary>
 /// A game variable that can be stored in the database.<br />
@@ -6,6 +8,7 @@
 /// </summary>
 public class Variable
 {
+    [JsonIgnore]
     public int Id { get; set; }
 
     /// <summary>
