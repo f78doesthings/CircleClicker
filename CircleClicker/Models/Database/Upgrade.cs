@@ -117,6 +117,10 @@ public partial class Upgrade : Purchase
                     );
                 }
             }
+            else if (Affects is Stat stat)
+            {
+                stat.NotifyPropertyChanged(nameof(Stat.DefaultValue));
+            }
         }
     }
 

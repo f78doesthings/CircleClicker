@@ -2,12 +2,20 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 using CircleClicker.Models;
 using CircleClicker.Models.Database;
+using CircleClicker.UI.Windows;
 using CircleClicker.Utils;
 
 namespace CircleClicker
 {
+    /// <summary>
+    /// Stores some important variables for the game, as well as some code to make it run.
+    /// </summary>
     public class Main : Observable
     {
         #region Constants
@@ -24,9 +32,10 @@ namespace CircleClicker
         public const double AutosaveInterval = 60;
 
         /// <summary>
-        /// The maximum number of ticks to run for offline production.
+        /// The maximum number of ticks to run for offline production.<br />
+        /// (This isn't really needed in Circle Clicker's current state, but it does allow it to be extended in the future)
         /// </summary>
-        public const int MaxOfflineTicks = 10000;
+        public const int MaxOfflineTicks = 1000;
 
         /// <summary>
         /// The minimum number of circles needed to perform a reincarnation.
@@ -106,7 +115,6 @@ namespace CircleClicker
         /// <summary>
         /// The user that is currently logged in.
         /// </summary>
-        [JsonIgnore]
         public User? CurrentUser { get; set; }
 
         /// <summary>
@@ -211,6 +219,108 @@ namespace CircleClicker
             circlesProduced =
                 Currency.Circles.Production * Stat.OfflineProduction.Value * deltaTime;
             CurrentSave.Circles += circlesProduced;
+        }
+
+        /// <summary>
+        /// Starts offline production calculation.
+        /// </summary>
+        public void CalculateOffline(Window owner, Dispatcher dispatcher)
+        {
+            if (CurrentSave == null)
+            {
+                throw new NullReferenceException("Main.CurrentSave is null.");
+            }
+
+            DateTime startTime = DateTime.Now;
+            TimeSpan offlineTime = startTime - CurrentSave.LastSaveDate;
+            TimeSpan maxOfflineTime = TimeSpan.FromHours(Stat.MaxOfflineTime.Value);
+            TimeSpan actualOfflineTime =
+                offlineTime > maxOfflineTime ? maxOfflineTime : offlineTime;
+            int i = 0;
+            bool isCancelled = false;
+
+            MessageBoxEx progressBox =
+                new()
+                {
+                    Message = "Calculating offline progress...",
+                    Progress = 0,
+                    Owner = owner,
+                };
+
+            void Draw(object? sender, EventArgs e)
+            {
+                if (IsAutosavingEnabled == false)
+                {
+                    IsAutosavingEnabled = null; // Allow MainWindow to update once every frame
+                }
+
+                progressBox.Progress = (double)i / MaxOfflineTicks * 100;
+            }
+
+            CompositionTarget.Rendering += Draw;
+            Task.Run(() =>
+            {
+                double circlesProduced = 0;
+
+                for (; i < MaxOfflineTicks; i++)
+                {
+                    IsAutosavingEnabled = false; // Temporary disable some methods, speeds up this loop a bit
+
+                    if (isCancelled)
+                    {
+                        TimeSpan finalDeltaTime = actualOfflineTime * (1 - (i / MaxOfflineTicks));
+                        TickOffline(
+                            finalDeltaTime.TotalSeconds,
+                            out double circlesProducedFinalTick
+                        );
+                        circlesProduced += circlesProducedFinalTick;
+                        break;
+                    }
+
+                    TimeSpan deltaTime = actualOfflineTime / MaxOfflineTicks;
+                    TickOffline(deltaTime.TotalSeconds, out double circlesProducedThisTick);
+                    circlesProduced += circlesProducedThisTick;
+                }
+
+                IsAutosavingEnabled = true;
+                dispatcher.Invoke(() =>
+                {
+                    CompositionTarget.Rendering -= Draw;
+                    Mouse.OverrideCursor = null;
+                    progressBox.Close();
+
+                    string offlineTimeString = offlineTime.ToString(
+                        @"d'd 'h'h 'm'm 's's'",
+                        App.Culture
+                    );
+                    if (offlineTime > maxOfflineTime)
+                    {
+                        offlineTimeString =
+                            $"<font color=\"res:AccentBrush\">{offlineTimeString}</font>";
+                    }
+
+                    string message = $"""
+                        Welcome back!
+
+                        While you were gone, your buildings produced <b>{Currency.Circles.Format(
+                            circlesProduced,
+                            "R+"
+                        )}</b>.
+                        You were offline for <b>{offlineTimeString}</b> / {maxOfflineTime.PrettyPrint()}.
+                        """;
+
+                    if (circlesProduced == 0)
+                    {
+                        message += "\n<i size=\"12\">Perhaps you should get some buildings...</i>";
+                    }
+                    message +=
+                        $"\n\n<font color=\"res:DimForegroundBrush\">(Calculating took <b>{(DateTime.Now - startTime).TotalMilliseconds:N0}ms</b>)</font>";
+                    MessageBoxEx.Show(owner, message, icon: MessageBoxImage.Information);
+                });
+            });
+
+            progressBox.ShowDialog();
+            isCancelled = true;
         }
 
         /// <summary>
@@ -326,6 +436,7 @@ namespace CircleClicker
                     throw new NotSupportedException();
                 }
 
+                // IDs need to be pregenerated in offline mode, otherwise saving won't work!
                 if (offlineMode)
                 {
                     purchase.Id = ++id;

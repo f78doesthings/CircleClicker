@@ -13,6 +13,7 @@ using BC = BCrypt.Net.BCrypt;
 
 namespace CircleClicker.UI.Windows
 {
+    // TODO: Generate IDs for purchases created in the admin window while in offline mode
     /// <summary>
     /// Interaction logic for AdminWindow.xaml
     /// </summary>
@@ -123,6 +124,7 @@ namespace CircleClicker.UI.Windows
 
         private static ObservableCollection<DataGridColumn> PurchaseColumns =>
             [
+                Columns.Number("Id", true, "ID"),
                 Columns.Text("Name"),
                 Columns.ComboBox("Requires", IReadOnlyDependency.Instances, true),
                 Columns.Number("BaseRequirement", name: "Base Req."),

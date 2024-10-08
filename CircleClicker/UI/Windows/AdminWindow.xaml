@@ -40,7 +40,6 @@
                 <DataGrid
                     Name="dg_buildings"
                     AutoGenerateColumns="False"
-                    RowHeaderTemplate="{StaticResource IdRowTemplate}"
                     Unloaded="DataGrid_Unloaded">
 
                     <d:DataGrid.ItemsSource>
@@ -82,7 +81,6 @@
                 <DataGrid
                     Name="dg_upgrades"
                     AutoGenerateColumns="False"
-                    RowHeaderTemplate="{StaticResource IdRowTemplate}"
                     Unloaded="DataGrid_Unloaded" />
             </TabItem>
 

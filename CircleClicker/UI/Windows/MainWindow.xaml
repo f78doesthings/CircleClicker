@@ -534,7 +534,7 @@
                                 <DataTemplate DataType="models:Stat">
                                     <TextBlock>
                                         <Run Foreground="{StaticResource DimForegroundBrush}" Text="{Binding Name, Mode=OneWay, StringFormat=\{0\}:}" />
-                                        <Run Text="{Binding DefaultValue, Mode=OneWay, Converter={StaticResource SuffixFormatter}, FallbackValue=0.00}" />
+                                        <Run Text="{Binding DefaultValue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SuffixFormatter}, FallbackValue=0.00}" />
                                     </TextBlock>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

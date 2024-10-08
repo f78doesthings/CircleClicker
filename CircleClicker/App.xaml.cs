@@ -68,6 +68,7 @@ namespace CircleClicker
             Window? startWindow = null;
             bool shouldConnect = true;
             Exception? connectException = null;
+            Main? savedData = null;
 
             // TODO: consider finding a better way to do flags
             bool onlineMode = e.Args.Contains("--online");
@@ -137,7 +138,6 @@ namespace CircleClicker
                 }
 
                 // Set up a temporary environment
-                Main? savedData = null;
                 try
                 {
                     using FileStream stream = File.OpenRead("save.json");
@@ -168,15 +168,16 @@ namespace CircleClicker
                 Main_.Buildings = savedData?.Buildings ?? [];
                 Main_.Upgrades = savedData?.Upgrades ?? [];
                 Main_.Variables = savedData?.Variables ?? [];
-                Main_.CurrentUser = new User() { IsAdmin = testMode };
+                Main_.CurrentUser = savedData?.CurrentUser ?? new User();
                 Main_.CurrentSave = savedData?.CurrentSave ?? new Save(Main_.CurrentUser);
+                Main_.CurrentUser.IsAdmin = testMode;
 
                 if ((onlineMode && result == MessageBoxResult.Yes) || savedData == null)
                 {
                     Main_.LoadSampleData(true, true);
                 }
 
-                startWindow = new MainWindow { Title = "Circle Clicker - Offline Mode" };
+                startWindow = new MainWindow();
             }
             else
             {
@@ -198,6 +199,11 @@ namespace CircleClicker
             startWindow.Show();
             progressBox.Close();
             Mouse.OverrideCursor = null;
+
+            if (savedData != null)
+            {
+                Main_.CalculateOffline(startWindow, Dispatcher);
+            }
         }
 
         private void Application_Exit(object sender, ExitEventArgs e)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 using System.Windows;
 using CircleClicker.UI.Windows;
 using CircleClicker.Utils.Audio;
@@ -14,31 +15,37 @@ public partial class User
     private float _musicVolume = Settings.MusicVolume.DefaultValue;
     private float _soundVolume = Settings.SoundVolume.DefaultValue;
 
+    [JsonIgnore]
     public int Id { get; set; }
 
     /// <summary>
     /// The name of the user.
     /// </summary>
+    [JsonIgnore]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// The hashed password of the user.
     /// </summary>
+    [JsonIgnore]
     public string Password { get; set; } = null!;
 
     /// <summary>
     /// Whether this user can access administrator-only features, such as the admin panel.
     /// </summary>
+    [JsonIgnore]
     public bool IsAdmin { get; set; }
 
     /// <summary>
     /// The time until the user is banned. If <see langword="null"/>, the user is not banned.
     /// </summary>
+    [JsonIgnore]
     public DateTime? BannedUntil { get; set; }
 
     /// <summary>
     /// The reason why the user is banned.
     /// </summary>
+    [JsonIgnore]
     public string? BanReason { get; set; }
 
     /// <summary>
@@ -80,6 +87,7 @@ public partial class User
     /// <summary>
     /// A list of <see cref="Save"/>s that belong to this user.
     /// </summary>
+    [JsonIgnore]
     public virtual ObservableCollection<Save> Saves { get; set; } = [];
 
     /// <summary>

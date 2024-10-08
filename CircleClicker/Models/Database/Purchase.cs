@@ -254,7 +254,7 @@ public abstract partial class Purchase : Observable, IDependency
         {
             double cost = 0;
             int i = 0;
-            for (; i < bulkAmount && (MaxAmount <= 0 || i < level - MaxAmount); i++)
+            for (; i < bulkAmount && (MaxAmount <= 0 || i < MaxAmount - level); i++)
             {
                 cost += BaseCost * Math.Pow(CostScaling, level + i);
             }
